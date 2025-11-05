@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+.fullscreen-canvas {
+  width: 100vw;
+  height: 100vh;
+  display: block; /* zapobiega dodaniu inline block space */
+  /* background-color: rgb(24, 27, 37); */
+}

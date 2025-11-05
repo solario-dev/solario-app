@@ -1,0 +1,117 @@
+{
+  "celestialBodies": [
+    {
+      "name": "Sun",
+      "type": "star",
+      "radiusKm": 696340,
+      "distanceFromSunKm": 0,
+      "orbitalPeriodDays": 0,
+      "rotationPeriodHours": 609.12,
+      "color": "#D78432",
+      "texture": "/textures/sun.jpg",
+      "scale": 109.2,
+      "distanceScale": 0,
+      "emissive": true,
+      "emissiveIntensity": 5,
+      "lightIntensity": 6
+    },
+    {
+      "name": "Mercury",
+      "type": "planet",
+      "radiusKm": 2439.7,
+      "distanceFromSunKm": 57910000,
+      "orbitalPeriodDays": 88,
+      "rotationPeriodHours": 1407.6,
+      "color": "#D7B385",
+      "texture": "/textures/mercury.jpg",
+      "scale": 0.383,
+      "distanceScale": 0.4
+    },
+    {
+      "name": "Venus",
+      "type": "planet",
+      "radiusKm": 6051.8,
+      "distanceFromSunKm": 108200000,
+      "orbitalPeriodDays": 225,
+      "rotationPeriodHours": -5832.5,
+      "color": "#EDB95A",
+      "texture": "/textures/venus.jpg",
+      "scale": 0.949,
+      "distanceScale": 0.7
+    },
+    {
+      "name": "Earth",
+      "type": "planet",
+      "radiusKm": 6371,
+      "distanceFromSunKm": 149600000,
+      "orbitalPeriodDays": 365.25,
+      "rotationPeriodHours": 23.93,
+      "color": "#468CF3",
+      "texture": "/textures/earth.jpg",
+      "scale": 1,
+      "distanceScale": 1
+    },
+    {
+      "name": "Mars",
+      "type": "planet",
+      "radiusKm": 3389.5,
+      "distanceFromSunKm": 227900000,
+      "orbitalPeriodDays": 687,
+      "rotationPeriodHours": 24.6,
+      "color": "#C73F18",
+      "texture": "/textures/mars.jpg",
+      "scale": 0.532,
+      "distanceScale": 1.5
+    },
+    {
+      "name": "Jupiter",
+      "type": "planet",
+      "radiusKm": 69911,
+      "distanceFromSunKm": 778500000,
+      "orbitalPeriodDays": 4333,
+      "rotationPeriodHours": 9.93,
+      "color": "#F69726",
+      "texture": "/textures/jupiter.jpg",
+      "scale": 11.21,
+      "distanceScale": 5.2
+    },
+    {
+      "name": "Saturn",
+      "type": "planet",
+      "radiusKm": 58232,
+      "distanceFromSunKm": 1434000000,
+      "orbitalPeriodDays": 10759,
+      "rotationPeriodHours": 10.7,
+      "color": "#B6B371",
+      "texture": "/textures/saturn.jpg",
+      "scale": 9.45,
+      "distanceScale": 9.5,
+      "hasRings": true,
+      "ringTexture": "/textures/saturn_rings.png"
+    },
+    {
+      "name": "Uranus",
+      "type": "planet",
+      "radiusKm": 25362,
+      "distanceFromSunKm": 2871000000,
+      "orbitalPeriodDays": 30687,
+      "rotationPeriodHours": -17.2,
+      "color": "#63C3D9",
+      "texture": "/textures/uranus.jpg",
+      "scale": 4.01,
+      "distanceScale": 19.2
+    },
+    {
+      "name": "Neptune",
+      "type": "planet",
+      "radiusKm": 24622,
+      "distanceFromSunKm": 4495000000,
+      "orbitalPeriodDays": 60190,
+      "rotationPeriodHours": 16.1,
+      "color": "#3F68C4",
+      "texture": "/textures/neptune.jpg",
+      "scale": 3.88,
+      "distanceScale": 30
+    }
+  ]
+}
