@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100..900;1,100..900&family=Geist+Mono:wght@100..900&family=Orbitron:wght@400..900&display=swap" rel="stylesheet');
+@import "tailwindcss";
+
+/* 🚀 GALACTIC THEME */
+@theme {
+  --color-bg-main: oklch(13% 0.028 261.692);
+  --color-bg-panel: oklch(13% 0.028 261.692);
+  --color-primary: #00FFF0;
+  --color-accent: #00B8D9;
+  --color-warning: #FDD835;
+  --color-danger: #FF365D;
+  --font-orbit: "Orbitron", sans-serif;
+  --font-geist: "Geist Mono", monospace;
+  --font-chivo: "Chivo", sans-serif;
+}
+
+/* ✨ Globalne style bazowe */
+@layer base {
+  html, body, #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    overflow: hidden;
+  }
+
+  /* Efekt "retro scanline" (CRT) */
+  .scanlines::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 255, 240, 0.03),
+      rgba(0, 255, 240, 0.03) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+    pointer-events: none;
+  }
+}
+
+/* 💡 Dodatkowe narzędzia */
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 8px var(--color-primary);
+  }
+
+  .border-glow {
+    box-shadow: 0 0 10px rgba(0, 255, 240, 0.3);
+  }
+
+  .panel {
+    background-color: var(--color-bg-panel);
+    border: 1px solid rgba(0, 255, 240, 0.15);
+    border-radius: 1rem;
+    box-shadow: 0 0 20px rgba(0, 255, 240, 0.1);
+  }
+}
+
+
