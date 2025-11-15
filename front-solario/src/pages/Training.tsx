@@ -1,11 +1,6 @@
-import { SolarSystem } from "../components/solar-system/SolarSystem.tsx";
-import planetsData from "../data/planets.json";
+import { ControlledSolarSystem } from "../components/solar-system/ControlledSolarSystem";
 
 export default function Training() {
-
-  const menuItems: string[] = planetsData.celestialBodies
-    .filter((p) => p.type === "planet" || p.type === "star")
-    .map((p) => p.name);
 
   return (
     <main
@@ -19,7 +14,7 @@ export default function Training() {
       {/* Główna sekcja z układem słonecznym */}
       <section className="h-screen">
         <div className="w-full h-full overflow-hidden">
-          <SolarSystem />
+          <ControlledSolarSystem />
         </div>
       </section>
     </main>
