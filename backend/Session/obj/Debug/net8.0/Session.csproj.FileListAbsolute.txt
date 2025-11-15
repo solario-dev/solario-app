@@ -1,0 +1,15 @@
+/home/vaca/solario/solario-app/backend/Session/bin/Debug/net8.0/Session
+/home/vaca/solario/solario-app/backend/Session/bin/Debug/net8.0/Session.deps.json
+/home/vaca/solario/solario-app/backend/Session/bin/Debug/net8.0/Session.runtimeconfig.json
+/home/vaca/solario/solario-app/backend/Session/bin/Debug/net8.0/Session.dll
+/home/vaca/solario/solario-app/backend/Session/bin/Debug/net8.0/Session.pdb
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/Session.GeneratedMSBuildEditorConfig.editorconfig
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/Session.AssemblyInfoInputs.cache
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/Session.AssemblyInfo.cs
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/Session.csproj.CoreCompileInputs.cache
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/Session.sourcelink.json
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/Session.dll
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/refint/Session.dll
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/Session.pdb
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/Session.genruntimeconfig.cache
+/home/vaca/solario/solario-app/backend/Session/obj/Debug/net8.0/ref/Session.dll
