@@ -1,3 +1,71 @@
-# Ignorowanie alternatywnych strumieni NTFS tworzonych przez Windows
-*.:Zone.Identifier
-*.:zone.identifier
+﻿# user files
+*.user
+*.userprefs
+*.suo
+
+# hidden folders
+.*/**
+.*/*
+
+# build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+[Tt]arget/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+[Tt]est[Rr]esults/
+
+# condo files
+CHANGELOG*
+.ready
+
+# jetbrains
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+_TeamCity*
+*.dotCover
+
+# include solution based resharper settings
+!*.[Dd]ot[Ss]ettings
+
+# nuget packages
+*.nupkg
+*.nuget.props
+
+# include self
+!.gitignore
+!.gitattributes
+
+# mac files
+.DS_Store
+
+# win files
+[Tt]humbs.db
+
+# log files
+*.log
+
+# vscode
+!.vscode/*
+
+# template config
+!.template.config/*
+
+# docker
+!.docker/*
+
+# node
+package-lock.json
+node_modules/
+
+# bower
+bower_components/
+
+# include build folder
+!.build/*
