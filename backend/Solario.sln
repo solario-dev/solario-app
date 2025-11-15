@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6B2B880C-2FC5-4DC1-A982-D2E1C1D45BD8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{87D15A2C-B558-4ABC-BE78-4C4C937E2643}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solario", "src\Solario\Solario.csproj", "{94429132-84D3-40D5-AB5B-A420D70F8AB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solario.Test", "test\Solario.Test\Solario.Test.csproj", "{A8104276-F18B-4503-93EC-65D64EF844B2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{94429132-84D3-40D5-AB5B-A420D70F8AB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94429132-84D3-40D5-AB5B-A420D70F8AB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94429132-84D3-40D5-AB5B-A420D70F8AB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94429132-84D3-40D5-AB5B-A420D70F8AB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8104276-F18B-4503-93EC-65D64EF844B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8104276-F18B-4503-93EC-65D64EF844B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8104276-F18B-4503-93EC-65D64EF844B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8104276-F18B-4503-93EC-65D64EF844B2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{94429132-84D3-40D5-AB5B-A420D70F8AB4} = {6B2B880C-2FC5-4DC1-A982-D2E1C1D45BD8}
+		{A8104276-F18B-4503-93EC-65D64EF844B2} = {87D15A2C-B558-4ABC-BE78-4C4C937E2643}
+	EndGlobalSection
+EndGlobal
