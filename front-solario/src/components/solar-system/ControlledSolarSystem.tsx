@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber'
-import { ThirdPersonCamera } from './ThirdPersonCamera.tsx'
+import { ThirdPersonCamera } from './game-objects/ThirdPersonCamera.tsx'
 import { useMemo, useState, useEffect } from 'react'
 import { PlayerShip } from './game-objects/PlayerShip.tsx'
 import { useRef } from 'react'
@@ -28,8 +28,8 @@ export const ControlledSolarSystem: React.FC = () => {
       try {
         const data = JSON.parse(event.data)
         if (data.type === "state") {
-          // Zakładam strukturę: { type: "state", self: {...}, others: [...], planets: [...] }
-          if (data.planets) setBodies(data.planets)
+          // Zakładam strukturę: { type: "state", self: {...}, others: [...], bodies: [...] }
+          if (data.bodies) setBodies(data.bodies)
           if (data.self) setSelfPlayer(data.self)
           if (data.others) setOtherPlayers(data.others)
         }

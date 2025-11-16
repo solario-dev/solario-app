@@ -1,5 +1,5 @@
 import JoinGame from "../components/navbar/JoinGame.tsx";
-import { SolarSystem } from "../components/solar-system/SolarSystem.tsx";
+import { SolarSystem } from "../components/solar-system/dashboard-system/SolarSystem.tsx";
 import planetsData from "../data/planets.json";
 
 export default function Dashboard() {
