@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { CelestialBody } from "./game-objects/CelestialBody.tsx"
-import type { CelestialBodyProps } from "../../types/CelestialBody.ts"
+import type { CelestialBodyProps } from "../../types/CelestialBodyType.ts"
 
-export function celestialBodies({ ws }: { ws: WebSocket }) {
+export function CelestialBodies({ ws }: { ws: WebSocket }) {
   const [bodies, setBodies] = useState<CelestialBodyProps[]>([])
 
   useEffect(() => {

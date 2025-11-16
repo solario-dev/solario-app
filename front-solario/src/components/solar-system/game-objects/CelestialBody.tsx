@@ -1,24 +1,26 @@
 import * as THREE from 'three'
 import { useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import type { CelestialBodyProps } from '../../../types/CelestialBody'
+import type { CelestialBodyType } from '../../../types/CelestialBodyType'
 
 
-export const CelestialBody: React.FC<CelestialBodyProps> = ({
+export const CelestialBody: React.FC<CelestialBodyType> = ({
   name,
-  position,
+  x,
+  y,
+  z,
   size,
   color,
   hasRings = false,
   ringTexture
 }) => {
   const groupRef = useRef<THREE.Group>(null!)
-  const targetPos = useRef(new THREE.Vector3(...position))
+  const targetPos = useRef(new THREE.Vector3(x, y, z))
 
   // Kiedy nadchodzi nowa pozycja z backendu:
   useEffect(() => {
-    targetPos.current.set(position[0], position[1], position[2])
-  }, [position])
+    targetPos.current.set(x, y, z)
+  }, [x, y, z])
 
   // Interpolacja (płynne poruszanie)
   useFrame(() => {
@@ -27,13 +29,13 @@ export const CelestialBody: React.FC<CelestialBodyProps> = ({
   })
 
   return (
-    <group ref={groupRef} position={position}>
+    <group ref={groupRef} position={[x, y, z]}>
       <mesh>
         <sphereGeometry args={[size, 32, 32]} />
         <meshStandardMaterial color={color} />
       </mesh>
 
-      {hasRings && (
+      {hasRings && size && (
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[size * 1.2, size * 2.5, 64]} />
           <meshBasicMaterial

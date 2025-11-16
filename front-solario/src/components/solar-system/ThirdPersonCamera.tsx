@@ -1,16 +1,14 @@
 import * as THREE from "three"
 import { useFrame } from "@react-three/fiber"
 
-export function ThirdPersonCamera({ playerRef }: { playerRef: React.RefObject<THREE.Object3D> }) {
+export function ThirdPersonCamera({ playerRef }: { playerRef: React.RefObject<THREE.Object3D | null> }) {
   useFrame(({ camera }) => {
-    if (!playerRef.current) return
+    const pr = playerRef?.current
+    if (!pr) return
 
-    const ship = playerRef.current.position
-    camera.position.lerp(
-      ship.clone().add(new THREE.Vector3(0, 3, 10)), 
-      0.1
-    )
-    camera.lookAt(ship)
+    const desired = pr.position.clone().add(new THREE.Vector3(0, 3, 10))
+    camera.position.lerp(desired, 0.12)
+    camera.lookAt(pr.position)
   })
 
   return null
