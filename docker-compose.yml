@@ -1,0 +1,27 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: solario-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: SolarioDb
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: ./backend/src/Solario
+      dockerfile: Dockerfile
+    container_name: solario-backend
+    ports:
+      - "5001:5000"
+    environment:
+      - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+      - MONGODB_DATABASE=SolarioDb
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:
