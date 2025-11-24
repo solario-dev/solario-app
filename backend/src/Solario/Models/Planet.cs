@@ -6,6 +6,7 @@ public class Planet
 {
     private static readonly Random _rng = new Random();
 
+    public string Name { get; private set; }
     public float OrbitDiameter { get; private set; }
     public float YearLength { get; private set; }
     public float DayLength { get; private set; }
@@ -19,11 +20,12 @@ public class Planet
     private float _rotationAngle;
     private readonly float _radius;
 
-    public Planet(float orbitDiameter, float yearLength, float dayLength, float planetDiameter, bool claimed = false)
+    public Planet(string name, float orbitDiameter, float yearLength, float dayLength, float planetDiameter, bool claimed = false)
     {
         if (yearLength == 0f) throw new ArgumentException("yearLength nie może być 0.");
         if (dayLength == 0f) throw new ArgumentException("dayLength nie może być 0.");
 
+        Name = name;
         OrbitDiameter = orbitDiameter;
         YearLength = yearLength;
         DayLength = dayLength;
