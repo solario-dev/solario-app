@@ -69,3 +69,5 @@ bower_components/
 
 # include build folder
 !.build/*
+
+/Solario/.env
