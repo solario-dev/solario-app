@@ -109,8 +109,8 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-    options.RoutePrefix = string.Empty;
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    c.RoutePrefix = string.Empty;
 });
 
 app.UseHttpsRedirection();
