@@ -55,9 +55,11 @@ var simulation = app.Services.GetRequiredService<SimulationService>();
 simulation.OrbitScale = 1.0f;
 simulation.PlanetScale = 1.0f;
 simulation.SimSpeed = 1.0f;
-simulation.InitPlanet(100, 10, 2, 10);
-simulation.InitPlanet(180, 15, 3, 15);
-simulation.InitPlanet(260, 22, 4, 18);
+simulation.InitPlanet("hej", 100, 10, 2, 10);
+simulation.InitPlanet("hi",180, 15, 3, 15);
+simulation.InitPlanet("hello",260, 22, 4, 18);
+simulation.InitPlayer(0,0,0,0,0,1);
+simulation.InitPlayer(1,10,10,0,10,1);
 simulation.Start();
 
 // Uruchomienie aplikacji

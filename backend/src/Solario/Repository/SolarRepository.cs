@@ -12,8 +12,8 @@ public class SolarRepository
     {
         return new List<Planet>()
         {
-            new Planet(1,1,1,1),
-            new Planet(2,1,2,1),
+            new Planet("eee",1,1,1,1),
+            new Planet("uuuu",2,1,2,1),
         };
     }
 }
