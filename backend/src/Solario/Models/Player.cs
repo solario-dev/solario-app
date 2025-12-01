@@ -6,13 +6,13 @@ public class Player
 {
     public int Id { get; private set; }
     public float PosX { get; private set; }
-    public float PosY { get; private set; }
+    public float PosY { get; private set; } // wysokość stała
     public float PosZ { get; private set; }
-    public float Rotation { get; private set; } // stopnie
+    public float Rotation { get; private set; } // stopnie, obrót wokół Y
     public float Speed { get; private set; }
     public float DistanceTraveled { get; private set; }
 
-    // Flag do ruchu na tick
+    // Flagi do ruchu na tick
     private bool _moveForward = false;
     private bool _moveBackward = false;
 
@@ -48,13 +48,15 @@ public class Player
     public void PerformMovement()
     {
         float rad = Rotation * (float)Math.PI / 180f;
-        float dx = (float)Math.Cos(rad) * Speed;
-        float dy = (float)Math.Sin(rad) * Speed;
+
+        // Ruch w płaszczyźnie XZ
+        float dx = (float)Math.Sin(rad) * Speed; // forward X
+        float dz = (float)Math.Cos(rad) * Speed; // forward Z
 
         if (_moveForward)
         {
             PosX += dx;
-            PosY += dy;
+            PosZ += dz;
             DistanceTraveled += Speed;
             _moveForward = false; // reset flagi
         }
@@ -62,9 +64,11 @@ public class Player
         if (_moveBackward)
         {
             PosX -= dx;
-            PosY -= dy;
+            PosZ -= dz;
             DistanceTraveled += Speed;
             _moveBackward = false; // reset flagi
         }
+
+        // PosZ pozostaje stałe
     }
 }

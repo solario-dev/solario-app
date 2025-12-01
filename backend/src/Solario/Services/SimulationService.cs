@@ -152,8 +152,8 @@ public class SimulationService
                 {
                     name = p.Name,
                     x = p.PosX,
-                    y = p.PosY,
-                    z = 0
+                    z = p.PosZ,
+                    y = 0
                 }).ToList()
             };
 
@@ -170,9 +170,9 @@ public class SimulationService
         {
             if (_players.TryGetValue(playerId, out var player))
             {
-                float turnAngle = 5f; // stopnie na tick
-                if (input.Keys.Left) player.Turn(player.Rotation - turnAngle);
-                if (input.Keys.Right) player.Turn(player.Rotation + turnAngle);
+                float turnAngle = 15f; // stopnie na tick
+                if (input.Keys.Left) player.Turn(player.Rotation + turnAngle);
+                if (input.Keys.Right) player.Turn(player.Rotation - turnAngle);
 
                 // forward/backward tylko ustawiają flagi do ruchu w RunLoop
                 if (input.Keys.Forward) player.SetMoveForward(true);

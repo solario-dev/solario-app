@@ -14,7 +14,8 @@ public class Planet
     public bool Claimed { get; private set; }
 
     public float PosX { get; private set; }
-    public float PosY { get; private set; }
+    public float PosZ { get; private set; }
+    // public float PosY { get; private set; }
 
     private float _orbitalAngle;
     private float _rotationAngle;
@@ -71,6 +72,6 @@ public class Planet
     private void UpdatePositionFromAngle()
     {
         PosX = _radius * (float)Math.Cos(_orbitalAngle);
-        PosY = _radius * (float)Math.Sin(_orbitalAngle);
+        PosZ = _radius * (float)Math.Sin(_orbitalAngle);
     }
 }
