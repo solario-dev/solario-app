@@ -15,5 +15,6 @@ namespace Solario.Data
         }
 
         public IMongoCollection<User> Users => _db.GetCollection<User>("users");
+        public IMongoCollection<ShopItem> ShopItems => _db.GetCollection<ShopItem>("shopItems");
     }
 }

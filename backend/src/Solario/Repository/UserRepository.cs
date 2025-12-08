@@ -18,6 +18,9 @@ namespace Solario.Repository
 
         public async Task<User?> GetByIdAsync(string id) =>
             await _context.Users.Find(u => u.Id == id).FirstOrDefaultAsync();
+        
+        public async Task<User?> GetByUsernameAsync(string username) =>
+            await _context.Users.Find(u => u.Username == username).FirstOrDefaultAsync();
 
         public async Task<User> CreateAsync(User user)
         {

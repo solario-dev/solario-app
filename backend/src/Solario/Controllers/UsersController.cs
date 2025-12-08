@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Solario.Models;
 using Solario.Repository;
 using BCrypt.Net;
+using MongoDB.Bson;
+
 
 namespace Solario.Controllers
 {
@@ -20,10 +22,20 @@ namespace Solario.Controllers
         public async Task<IActionResult> GetAll() =>
             Ok(await _repo.GetAllAsync());
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
+        [HttpGet("{identifier}")]
+        public async Task<IActionResult> GetByIdOrUsername(string identifier)
         {
-            var user = await _repo.GetByIdAsync(id);
+            User? user;
+            
+            if (ObjectId.TryParse(identifier, out _))
+            {
+                user = await _repo.GetByIdAsync(identifier);
+            }
+            else
+            {
+                user = await _repo.GetByUsernameAsync(identifier);
+            }
+
             if (user == null) return NotFound();
             return Ok(user);
         }

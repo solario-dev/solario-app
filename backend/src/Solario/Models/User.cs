@@ -20,6 +20,9 @@ namespace Solario.Models
 
         [BsonElement("level")]
         public int Level { get; set; } = 1;
+        
+        [BsonElement("credits")]
+        public int Credits { get; set; } = 0;
 
         [BsonElement("quizzesCompleted")]
         public int QuizzesCompleted { get; set; } = 0;
@@ -29,5 +32,8 @@ namespace Solario.Models
 
         [BsonElement("conqueredPlanets")]
         public string[] ConqueredPlanets { get; set; } = Array.Empty<string>();
+        
+        [BsonElement("inventory")]
+        public List<string> Inventory { get; set; } = new List<string>();
     }
 }
