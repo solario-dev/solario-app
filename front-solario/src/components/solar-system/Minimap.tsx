@@ -6,8 +6,8 @@ export const Minimap = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // wielkość minimapy
-  const SIZE = 200; 
-  const SCALE = 0.05; // im mniejsza wartość, tym większy świat pomieści się na mapie
+  const SIZE = 300; 
+  const SCALE = 0.5; // im mniejsza wartość, tym większy świat pomieści się na mapie
 
   useEffect(() => {
     if (!state || !canvasRef.current) return;
@@ -26,7 +26,7 @@ export const Minimap = () => {
 
     // Funkcja mapowania współrzędnych
     const mapX = (x: number) => SIZE / 2 + x * SCALE;
-    const mapZ = (z: number) => SIZE / 2 - z * SCALE; // używamy X-Z płaszczyzny
+    const mapZ = (z: number) => SIZE / 2 + z * SCALE; // używamy X-Z płaszczyzny
 
     // --- Ciała niebieskie ---
     ctx.fillStyle = "yellow";

@@ -12,7 +12,7 @@ const GameHud = () => {
     <div>
       <h2>
         Self: {state.self.playerId}
-        ({state.self.x}, {state.self.y}, {state.self.z})
+        ({state.self.x}, {state.self.y}, {state.self.z}){state.self.rot}
       </h2>
 
       <h3>Other Players:</h3>

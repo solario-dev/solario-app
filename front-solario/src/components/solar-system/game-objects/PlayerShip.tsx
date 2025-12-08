@@ -15,24 +15,29 @@ type PlayerShipProps = {
 export const PlayerShip = forwardRef<THREE.Object3D, PlayerShipProps>(
   ({ player }, ref) => {
     const shipRef = useRef<THREE.Mesh>(null!)
-    const targetPos = useRef(new THREE.Vector3())
 
     // Re-export lokalnego ref na zewnątrz
     useImperativeHandle(ref, () => shipRef.current)
 
-    useFrame(() => {
+    useFrame((_, delta) => {
       if (!player || !shipRef.current) return
 
-      // cel pozycji
-      targetPos.current.set(player.x, player.y, player.z)
-      shipRef.current.position.lerp(targetPos.current, 0.2)
+      // Współczynnik interpolacji - wyższy = bardziej responsywny, niższy = bardziej płynny
+      const lerpFactor = Math.min(delta * 10, 1)
 
-      // rotacja wokół Y
-      const q = new THREE.Quaternion().setFromEuler(
-        new THREE.Euler(0, THREE.MathUtils.degToRad(player.rot), 0)
-      )
+      // Płynna interpolacja pozycji
+      const targetPosition = new THREE.Vector3(player.x, player.y, player.z)
+      shipRef.current.position.lerp(targetPosition, lerpFactor)
 
-      shipRef.current.quaternion.slerp(q, 0.5)
+      // Płynna interpolacja rotacji z obsługą przejścia przez 0/360
+      const currentRotation = shipRef.current.rotation.y
+      const targetRotation = THREE.MathUtils.degToRad(player.rot)
+
+      // Oblicz różnicę i normalizuj do zakresu [-PI, PI] (najkrótsza droga)
+      let delta_angle = targetRotation - currentRotation
+      delta_angle = ((delta_angle + Math.PI) % (Math.PI * 2)) - Math.PI
+
+      shipRef.current.rotation.y = currentRotation + delta_angle * lerpFactor
     })
 
     useEffect(() => {

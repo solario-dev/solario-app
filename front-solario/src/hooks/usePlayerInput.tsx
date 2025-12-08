@@ -14,7 +14,7 @@ export function usePlayerInput(ws: WebSocket | null, playerId: string) {
     left: false,
     right: false,
   });
-  const intervalRef = useRef<NodeJS.Timer | null>(null);
+  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!ws) return;
@@ -78,7 +78,7 @@ export function usePlayerInput(ws: WebSocket | null, playerId: string) {
         };
         ws.send(JSON.stringify(input));
       }
-    }, 50); // wysyłanie co 50ms
+    }, 33); // wysyłanie co 33ms (~30 FPS) - zsynchronizowane z backendem
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);

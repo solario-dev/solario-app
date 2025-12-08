@@ -23,7 +23,12 @@ export function useSimulationSocket(url = "ws://localhost:5000/simulations/socke
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("State from server:", data);
+
+        // Log rotation changes
+        if (data.self && Math.random() < 0.033) { // Log ~1 per second at 30 FPS
+          console.log(`Frontend received: rot=${data.self.rot.toFixed(2)}°, pos=(${data.self.x.toFixed(1)}, ${data.self.z.toFixed(1)})`);
+        }
+
         setState(data);
       } catch (e) {
         console.error("Invalid JSON from server", e);
