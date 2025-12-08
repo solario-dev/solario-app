@@ -10,12 +10,23 @@ using Solario.Configuration;
 using Solario.Data;
 using Solario.Repository;
 using Microsoft.Extensions.Configuration;
-using Solario.Services; // namespace dla SimulationService
 using Solario.Services;
 using Solario.Websockets;
 using System.Net.WebSockets;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Konfiguracja Serilog
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    // .WriteTo.File("logs/solario-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+// builder.Host.UseSerilog((ctx, config) => 
+//     config.ConfigureConsole(ctx.Configuration));
 
 // Load .env if present (harmless if not)
 DotEnv.Load();
@@ -172,7 +183,6 @@ simulation.InitPlanet("Neptune", 4495, 5000, 10, 7);
 
 // Gracze
 simulation.InitPlayer(0, 0, 0, 0, 0, 1);        // start w centrum układu
-simulation.InitPlayer(1, 10, 0, 10, 10, 1);    // drugi gracz gdzieś w pobliżu
 
 // Start symulacji
 simulation.Start();
@@ -181,4 +191,16 @@ simulation.Start();
 // ------------------------
 // Uruchomienie aplikacji
 // ------------------------
-app.Run();
+try
+{
+    Log.Information("Starting Solario application");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
