@@ -44,6 +44,7 @@ _TeamCity*
 
 # mac files
 .DS_Store
+**/.DS_Store
 
 # win files
 [Tt]humbs.db
