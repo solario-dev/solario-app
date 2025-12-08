@@ -10,12 +10,23 @@ using Solario.Configuration;
 using Solario.Data;
 using Solario.Repository;
 using Microsoft.Extensions.Configuration;
-using Solario.Services; // namespace dla SimulationService
 using Solario.Services;
 using Solario.Websockets;
 using System.Net.WebSockets;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Konfiguracja Serilog
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    // .WriteTo.File("logs/solario-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+// builder.Host.UseSerilog((ctx, config) => 
+//     config.ConfigureConsole(ctx.Configuration));
 
 // Load .env if present (harmless if not)
 DotEnv.Load();
@@ -155,18 +166,41 @@ app.MapControllers();
 // ------------------------
 var simulation = app.Services.GetRequiredService<SimulationService>();
 
-// Możesz ustawić parametry globalne symulacji
-simulation.OrbitScale = 1.0f;
-simulation.PlanetScale = 1.0f;
-simulation.SimSpeed = 1.0f;
-simulation.InitPlanet("hej", 100, 10, 2, 10);
-simulation.InitPlanet("hi",180, 15, 3, 15);
-simulation.InitPlanet("hello",260, 22, 4, 18);
-simulation.InitPlayer(0,0,0,0,0,1);
-simulation.InitPlayer(1,10,10,0,10,1);
+// Globalne ustawienia symulacji
+simulation.OrbitScale = 1.0f;    // możemy skalować odległości
+simulation.PlanetScale = 1.0f;   // możemy skalować rozmiary planet
+simulation.SimSpeed = 1.0f;      // 1 tick = 1/30 s
+
+// Init planety (OrbitDiameter w jednostkach, YearLength w sekundach symulacji, DayLength w sekundach, PlanetDiameter w jednostkach)
+simulation.InitPlanet("Mercury", 58, 10, 6, 2);
+simulation.InitPlanet("Venus", 108, 25, 10, 4);
+simulation.InitPlanet("Earth", 150, 30, 10, 4);
+simulation.InitPlanet("Mars", 228, 56, 10, 3);
+simulation.InitPlanet("Jupiter", 778, 360, 10, 10);
+simulation.InitPlanet("Saturn", 1427, 800, 10, 9);
+simulation.InitPlanet("Uranus", 2871, 2500, 10, 7);
+simulation.InitPlanet("Neptune", 4495, 5000, 10, 7);
+
+// Gracze
+simulation.InitPlayer(0, 0, 0, 0, 0, 1);        // start w centrum układu
+
+// Start symulacji
 simulation.Start();
+
 
 // ------------------------
 // Uruchomienie aplikacji
 // ------------------------
-app.Run();
+try
+{
+    Log.Information("Starting Solario application");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

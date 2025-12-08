@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { useGameState } from "../../context/GameStateContext";
+import { useGameState } from "../../hooks/useGameState";
 
 export default function JoinGame() {
     const navigate = useNavigate();

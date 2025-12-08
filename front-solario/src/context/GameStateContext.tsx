@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useState } from "react";
 import type { ReactNode } from "react";
 
 // 🎮 Typy stanów gry
@@ -21,7 +21,7 @@ interface GameStateContextType {
   quitTraining: () => void;
 }
 
-const GameStateContext = createContext<GameStateContextType | null>(null);
+export const GameStateContext = createContext<GameStateContextType | null>(null);
 
 export const GameStateProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<GameState>("idle");
@@ -41,10 +41,4 @@ export const GameStateProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// 🧩 Hook pomocniczy
-export const useGameState = () => {
-  const context = useContext(GameStateContext);
-  if (!context)
-    throw new Error("useGame must be used within a GameProvider");
-  return context;
-};
+

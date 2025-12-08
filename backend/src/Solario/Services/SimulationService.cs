@@ -3,12 +3,19 @@ namespace Solario.Services;
 using Solario.Abstractions;
 using System.Text.Json;
 using Solario.Models;
+using Microsoft.Extensions.Logging;
 
 public class SimulationService
 {
+    private readonly ILogger<SimulationService> _logger;
     private readonly object _lock = new();
     private readonly List<Planet> _planets = new();
     private readonly Dictionary<int, Player> _players = new();
+
+    public SimulationService(ILogger<SimulationService> logger)
+    {
+        _logger = logger;
+    }
 
     private Thread? _thread;
     private bool _running = false;
@@ -152,8 +159,8 @@ public class SimulationService
                 {
                     name = p.Name,
                     x = p.PosX,
-                    y = p.PosY,
-                    z = 0
+                    z = p.PosZ,
+                    y = 0
                 }).ToList()
             };
 
@@ -170,13 +177,11 @@ public class SimulationService
         {
             if (_players.TryGetValue(playerId, out var player))
             {
-                float turnAngle = 5f; // stopnie na tick
-                if (input.Keys.Left) player.Turn(player.Rotation - turnAngle);
-                if (input.Keys.Right) player.Turn(player.Rotation + turnAngle);
-
-                // forward/backward tylko ustawiają flagi do ruchu w RunLoop
-                if (input.Keys.Forward) player.SetMoveForward(true);
-                if (input.Keys.Backward) player.SetMoveBackward(true);
+                // Ustawiamy flagi na podstawie aktualnego stanu klawiszy
+                player.SetTurnLeft(input.Keys.Left);
+                player.SetTurnRight(input.Keys.Right);
+                player.SetMoveForward(input.Keys.Forward);
+                player.SetMoveBackward(input.Keys.Backward);
             }
         }
     }
@@ -186,10 +191,16 @@ public class SimulationService
     // ----------------------------
     public void Start()
     {
-        if (_running) return;
+        if (_running)
+        {
+            _logger.LogWarning("Simulation is already running");
+            return;
+        }
+        _logger.LogInformation("Starting simulation with {PlanetCount} planets and {PlayerCount} players", _planets.Count, _players.Count);
         _running = true;
         _thread = new Thread(RunLoop) { IsBackground = true };
         _thread.Start();
+        _logger.LogInformation("Simulation thread started");
     }
 
     public void Stop()
@@ -200,6 +211,8 @@ public class SimulationService
 
     private void RunLoop()
     {
+        _logger.LogInformation("Simulation loop started");
+
         while (_running)
         {
             lock (_lock)
@@ -208,10 +221,12 @@ public class SimulationService
                     p.Move(_dt * SimSpeed);
 
                 foreach (var player in _players.Values)
-                    player.PerformMovement(); // ruch gracza raz na tick
+                    player.PerformMovement(_dt * SimSpeed); // ruch i obrót gracza raz na tick
             }
 
             Thread.Sleep((int)(_dt * 1000));
         }
+
+        _logger.LogInformation("Simulation loop stopped");
     }
 }

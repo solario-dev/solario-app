@@ -7,8 +7,25 @@ import Shop from './pages/Shop.tsx'
 import Navbar from './components/navbar/Navbar.tsx'
 import LandingPage from './pages/LandingPage.tsx'
 import Training from './pages/Training.tsx'
+import { useEffect } from 'react'
+import { getGames } from './api/games.ts'
 
 export default function App() {
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const games = await getGames();
+        console.log("Games fetched in App.tsx:", games);
+      } catch (error) {
+        console.log("Nie udało się pobrać gry.");
+        console.error("Error fetching games in App.tsx:", error);
+      }
+    };
+
+    fetchGames();
+  }, []);
+
   return (
     <BrowserRouter>
       <Navbar />
