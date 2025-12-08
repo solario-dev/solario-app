@@ -1,0 +1,131 @@
+﻿# user files
+*.user
+*.userprefs
+*.suo
+
+# hidden folders
+.*/**
+.*/*
+
+# build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+[Tt]arget/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+[Tt]est[Rr]esults/
+
+# condo files
+CHANGELOG*
+.ready
+
+# jetbrains
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+_TeamCity*
+*.dotCover
+
+# include solution based resharper settings
+!*.[Dd]ot[Ss]ettings
+
+# nuget packages
+*.nupkg
+*.nuget.props
+
+# include self
+!.gitignore
+!.gitattributes
+
+# mac files
+.DS_Store
+**/.DS_Store
+
+# win files
+[Tt]humbs.db
+
+# log files
+*.log
+
+# vscode
+!.vscode/*
+
+# template config
+!.template.config/*
+
+# docker
+!.docker/*
+
+# node
+package-lock.json
+node_modules/
+
+# bower
+bower_components/
+
+# include build folder
+!.build/*
+
+/Solario/.env
+
+# JetBrains IDE (IntelliJ, Rider, PhpStorm, WebStorm, etc.)
+# keep this generic: ignores all .idea folders and project files
+.idea/
+**/.idea/
+*.iml
+*.iws
+.idea.Solario/
+
+# JetBrains workspace files and metadata (safe to ignore)
+*.idea.*
+*.ipr
+
+# GitHub Copilot / AI tooling local metadata in IDE
+**/copilot.data.migration.*
+**/copilot.*.xml
+
+# Editor / OS files
+*.swp
+*~.nib
+*.class
+*.lock
+
+# dotenv
+.env
+.env.local
+.env.*.local
+
+# Rider / Visual Studio caches
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Local JetBrains caches
+/.gradle/
+/out/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# misc IDE folders
+.vscode/
+.idea/
+
+# Lockfiles / package manager
+yarn.lock
+.pnpm-debug.log
+
+# JetBrains project files under backend (specific)
+backend/.idea/
+backend/.idea/**
+
+# remove accidental moved gitignore copies
+backend/.gitignore

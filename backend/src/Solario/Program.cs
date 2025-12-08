@@ -10,6 +10,7 @@ using Solario.Configuration;
 using Solario.Data;
 using Solario.Repository;
 using Microsoft.Extensions.Configuration;
+using Solario.Services; // namespace dla SimulationService
 using Solario.Services;
 using Solario.Websockets;
 using System.Net.WebSockets;
@@ -67,6 +68,9 @@ builder.Services.AddSingleton<MongoContext>();
 
 // Repository
 builder.Services.AddScoped<UserRepository>();
+// Dodane brakujące serwisy dla ShopController
+builder.Services.AddScoped<ShopRepository>();
+builder.Services.AddScoped<ShopService>();
 
 // JWT (optional)
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
@@ -126,6 +130,8 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 app.UseCors("AllowReact");
+// Dodane, aby serwować obrazki przedmiotów ze sklepu
+app.UseStaticFiles(); 
 
 if (!string.IsNullOrEmpty(jwtKey))
 {
