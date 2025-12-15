@@ -19,7 +19,7 @@ interface PlanetProps {
   ringTexture?: string
 }
 
-export const Planet: React.FC<PlanetProps> = ({name, distance, size, color, speed, hasMoon = false, moonTexture }) => {
+export const Planet: React.FC<PlanetProps> = ({name, distance, size, color, speed }) => {
   const groupRef = useRef<THREE.Group>(null!)
   const planetMeshRef = useRef<THREE.Mesh>(null!)
   // const moonRef = useRef<THREE.Mesh>(null!)

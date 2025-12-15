@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100..900;1,100..900&family=Geist+Mono:wght@100..900&family=Orbitron:wght@400..900&display=swap" rel="stylesheet');
 @import "tailwindcss";
+@import "./styles/PrimaryButton.css";
+@import "./styles/Minimap.css";
 
 /* 🚀 GALACTIC THEME */
 @theme {

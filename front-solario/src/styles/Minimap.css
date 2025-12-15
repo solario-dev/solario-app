@@ -1,0 +1,125 @@
+/* Minimap Cyberspace Styles */
+.minimap-container {
+  position: absolute;
+  bottom: 100px;
+  right: 20px;
+  z-index: 50;
+}
+
+.minimap-canvas {
+  border: 1px solid rgba(0, 255, 240, 0.3);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  display: block;
+  box-shadow:
+    0 0 10px rgba(0, 255, 240, 0.3),
+    inset 0 0 30px rgba(0, 255, 240, 0.05);
+  backdrop-filter: blur(8px);
+}
+
+.minimap-controls {
+  /* margin-top: 12px; */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.8);
+  /* backdrop-filter: blur(12px); */
+  padding: 10px 14px;
+  /* border-radius: 8px; */
+  /* border: 2px solid rgba(0, 255, 240, 0.3); */
+  /* box-shadow: 0 0 15px rgba(0, 255, 240, 0.2); */
+}
+
+.minimap-label {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-family: var(--font-geist);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(0, 255, 240, 0.6);
+  min-width: 60px;
+}
+
+.minimap-value {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-family: var(--font-geist);
+  font-weight: 600;
+  min-width: 45px;
+  text-align: right;
+  text-shadow: 0 0 4px rgba(0, 255, 240, 0.4);
+}
+
+/* Custom range slider with cyberspace style */
+.minimap-slider {
+  flex: 1;
+  min-width: 150px;
+  height: 6px;
+  background: rgba(0, 255, 240, 0.1);
+  border-radius: 3px;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid rgba(0, 255, 240, 0.3);
+  box-shadow: inset 0 0 10px rgba(0, 255, 240, 0.1);
+}
+
+.minimap-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow:
+    /* 0 0 10px rgba(0, 255, 240, 0.8), */
+    0 0 20px rgba(0, 255, 240, 0.4);
+  border: 2px solid rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+}
+
+.minimap-slider::-webkit-slider-thumb:hover {
+  background: #00FFF0;
+  box-shadow:
+    0 0 15px rgba(0, 255, 240, 1),
+    0 0 30px rgba(0, 255, 240, 0.6);
+  transform: scale(1.1);
+}
+
+.minimap-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow:
+    0 0 10px rgba(0, 255, 240, 0.8),
+    0 0 20px rgba(0, 255, 240, 0.4);
+  border: 2px solid rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+}
+
+.minimap-slider::-moz-range-thumb:hover {
+  background: #00FFF0;
+  box-shadow:
+    0 0 15px rgba(0, 255, 240, 1),
+    0 0 30px rgba(0, 255, 240, 0.6);
+  transform: scale(1.1);
+}
+
+/* Scanline effect overlay */
+.minimap-canvas::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 255, 240, 0.02),
+    rgba(0, 255, 240, 0.02) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+  border-radius: 8px;
+}

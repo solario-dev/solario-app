@@ -16,7 +16,6 @@ export const Indicator: React.FC<IndicatorProps> = ({
   label,
   color = 'white',
   size = 0.3,
-  distance = 5,
 }) => {
   const groupRef = useRef<THREE.Group>(null!)
   const { camera } = useThree()
