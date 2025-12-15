@@ -5,7 +5,12 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "MONGODB_CONNECTION_STRING": "mongodb://solario:solario_pass@localhost:27017",
+        "MONGODB_DATABASE": "SolarioDb",
+        "JWT_KEY": "super_secret_key_replace_me",
+        "JWT_ISSUER": "solario",
+        "JWT_AUDIENCE": "solario_frontend"
       },
       "launchUrl": "http://localhost:5000",
       "applicationUrl": "http://localhost:5000"

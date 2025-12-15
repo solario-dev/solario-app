@@ -178,14 +178,27 @@ simulation.PlanetScale = 1.0f;   // możemy skalować rozmiary planet
 simulation.SimSpeed = 1.0f;      // 1 tick = 1/30 s
 
 // Init planety (OrbitDiameter w jednostkach, YearLength w sekundach symulacji, DayLength w sekundach, PlanetDiameter w jednostkach)
-simulation.InitPlanet("Mercury", 58, 10, 6, 2);
-simulation.InitPlanet("Venus", 108, 25, 10, 4);
-simulation.InitPlanet("Earth", 150, 30, 10, 4);
-simulation.InitPlanet("Mars", 228, 56, 10, 3);
-simulation.InitPlanet("Jupiter", 778, 360, 10, 10);
-simulation.InitPlanet("Saturn", 1427, 800, 10, 9);
-simulation.InitPlanet("Uranus", 2871, 2500, 10, 7);
-simulation.InitPlanet("Neptune", 4495, 5000, 10, 7);
+// simulation.InitPlanet("Mercury", 58, 10, 6, 2);
+// simulation.InitPlanet("Venus", 108, 25, 10, 4);
+// simulation.InitPlanet("Earth", 150, 30, 10, 4);
+// simulation.InitPlanet("Mars", 228, 56, 10, 3);
+// simulation.InitPlanet("Jupiter", 778, 360, 10, 10);
+// simulation.InitPlanet("Saturn", 1427, 800, 10, 9);
+// simulation.InitPlanet("Uranus", 2871, 2500, 10, 7);
+// simulation.InitPlanet("Neptune", 4495, 5000, 10, 7);
+
+// Skala ODLEGŁOŚCI: ~10 jednostek sceny = 1 milion km
+// Skala ROZMIARU: ~0.00001 jednostki sceny = 1 km (Średnica)
+// Skala CZASU: 1 jednostka czasu symulacji (dt) = 1 dzień ziemski (uproszczenie)
+
+simulation.InitPlanet("Mercury", 1158f, 87.97f, 4222.6f, 0.048f);
+simulation.InitPlanet("Venus", 1661f, 224.70f, 5832.5f, 0.121f);
+simulation.InitPlanet("Earth", 2075f, 365.25f, 24.0f, 0.127f);
+simulation.InitPlanet("Mars", 2858f, 686.98f, 24.6f, 0.068f);
+simulation.InitPlanet("Jupiter", 8365f, 4332.59f, 9.9f, 1.398f);
+simulation.InitPlanet("Saturn", 14816f, 10759.22f, 10.7f, 1.164f);
+simulation.InitPlanet("Uranus", 29304f, 30687.15f, 17.2f, 0.507f);
+simulation.InitPlanet("Neptune", 45530f, 60190.03f, 16.1f, 0.492f);
 
 // Gracze
 simulation.InitPlayer(0, 0, 0, 0, 0, 1);        // start w centrum układu

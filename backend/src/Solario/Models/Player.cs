@@ -20,6 +20,9 @@ public class Player
     private bool _turnLeft = false;
     private bool _turnRight = false;
 
+    // Flaga turbo (ciągła - nie resetowana)
+    private bool _turbo = false;
+
     public Player(int id, float x, float y, float z, float rotation, float speed)
     {
         Id = id;
@@ -47,6 +50,7 @@ public class Player
     public void SetMoveBackward(bool move) => _moveBackward = move;
     public void SetTurnLeft(bool turn) => _turnLeft = turn;
     public void SetTurnRight(bool turn) => _turnRight = turn;
+    public void SetTurbo(bool turbo) => _turbo = turbo;
 
     // ----------------------------
     // PERFORM MOVEMENT - jeden tick
@@ -70,14 +74,16 @@ public class Player
 
         // Obsługa ruchu
         float rad = Rotation * (float)Math.PI / 180f;
-        float dx = (float)Math.Sin(rad) * Speed; // forward X
-        float dz = (float)Math.Cos(rad) * Speed; // forward Z
+        float speedMultiplier = _turbo ? 5.0f : 1.0f; // turbo x5 prędkości
+        float effectiveSpeed = Speed * speedMultiplier;
+        float dx = (float)Math.Sin(rad) * effectiveSpeed; // forward X
+        float dz = (float)Math.Cos(rad) * effectiveSpeed; // forward Z
 
         if (_moveForward)
         {
             PosX += dx;
             PosZ += dz;
-            DistanceTraveled += Speed;
+            DistanceTraveled += effectiveSpeed;
             _moveForward = false; // reset flagi
         }
 
@@ -85,7 +91,7 @@ public class Player
         {
             PosX -= dx;
             PosZ -= dz;
-            DistanceTraveled += Speed;
+            DistanceTraveled += effectiveSpeed;
             _moveBackward = false; // reset flagi
         }
     }

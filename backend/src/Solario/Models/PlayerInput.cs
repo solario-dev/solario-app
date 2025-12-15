@@ -13,5 +13,6 @@ namespace Solario.Models
         public bool Backward { get; set; }
         public bool Left { get; set; }
         public bool Right { get; set; }
+        public bool Turbo { get; set; }
     }
 }
