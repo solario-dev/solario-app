@@ -2,7 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Stars } from '@react-three/drei'
 import { Planet } from './Planet.tsx'
 import { Sun } from './Sun.tsx'
-import planetsData from '../../../data/planets.json'
+import planetsData from '../../../data/deshboard-display.json'
 
 export const SolarSystem: React.FC = () => {
   return (

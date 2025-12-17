@@ -182,6 +182,7 @@ public class SimulationService
                 player.SetTurnRight(input.Keys.Right);
                 player.SetMoveForward(input.Keys.Forward);
                 player.SetMoveBackward(input.Keys.Backward);
+                player.SetTurbo(input.Keys.Turbo);
             }
         }
     }

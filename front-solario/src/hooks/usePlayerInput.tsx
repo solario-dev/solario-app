@@ -5,6 +5,7 @@ type KeysState = {
   backward: boolean;
   left: boolean;
   right: boolean;
+  turbo: boolean;
 };
 
 export function usePlayerInput(ws: WebSocket | null, playerId: string) {
@@ -13,6 +14,7 @@ export function usePlayerInput(ws: WebSocket | null, playerId: string) {
     backward: false,
     left: false,
     right: false,
+    turbo: false,
   });
   const intervalRef = useRef<number | null>(null);
 
@@ -37,6 +39,9 @@ export function usePlayerInput(ws: WebSocket | null, playerId: string) {
         case "d":
           keys.current.right = true;
           break;
+        case "shift":
+          keys.current.turbo = true;
+          break;
       }
     };
 
@@ -58,6 +63,9 @@ export function usePlayerInput(ws: WebSocket | null, playerId: string) {
         case "d":
           keys.current.right = false;
           break;
+        case "shift":
+          keys.current.turbo = false;
+          break;
       }
     };
 
@@ -74,6 +82,7 @@ export function usePlayerInput(ws: WebSocket | null, playerId: string) {
             Backward: keys.current.backward,
             Left: keys.current.left,
             Right: keys.current.right,
+            Turbo: keys.current.turbo,
           },
         };
         ws.send(JSON.stringify(input));

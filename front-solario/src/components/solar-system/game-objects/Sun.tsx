@@ -14,7 +14,7 @@ const Sun: React.FC<SunProps> = ({
   position = [0, 0, 0],
   radius = 5,
   color = "yellow",
-  intensity = 2,
+  intensity = 5000,
   rotationSpeed = 0.001,
 }) => {
   const sunRef = useRef<THREE.Mesh>(null);
@@ -42,7 +42,8 @@ const Sun: React.FC<SunProps> = ({
         position={position}
         intensity={intensity}
         color={color}
-        distance={1000}
+        distance={0} // 0 = nieskończona odległość
+        decay={2} // fizyczne tłumienie światła
       />
     </>
   );

@@ -6,6 +6,12 @@ export function ThirdPersonCamera({ playerRef }: { playerRef: React.RefObject<TH
   const lookAhead = new THREE.Vector3(0, 2, 5);      // punkt patrzenia przed statkiem
 
   useFrame(({ camera }) => {
+    // Zwiększamy zasięg renderowania kamery
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.far = 10000;
+      camera.updateProjectionMatrix();
+    }
+
     const pr = playerRef?.current
     if (!pr) return
 

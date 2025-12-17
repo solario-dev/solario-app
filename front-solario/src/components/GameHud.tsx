@@ -10,12 +10,11 @@ const GameHud = () => {
 
   return (
     <div>
-      <h2>
-        Self: {state.self.playerId}
-        ({state.self.x}, {state.self.y}, {state.self.z}){state.self.rot}
+      <h3>Players:</h3>
+      <h2 className="font-bold">
+        {state.self.playerId}:({state.self.x}, {state.self.y}, {state.self.z}){state.self.rot}
       </h2>
-
-      <h3>Other Players:</h3>
+      
       <ul>
         {state.others?.map(p => (
           <li key={p.playerId}>
@@ -24,14 +23,14 @@ const GameHud = () => {
         ))}
       </ul>
 
-      <h3>Bodies:</h3>
+      {/* <h3>Bodies:</h3>
       <ul>
         {state.bodies?.map(b => (
           <li key={b.name}>
             {b.name}: ({b.x}, {b.y}, {b.z})
           </li>
         ))}
-      </ul>
+      </ul> */}
     </div>
   );
 };

@@ -8,8 +8,7 @@ import React from 'react'
 import celestialBodiesData from '../../../data/planets.json'
 
 interface PlanetProps {
-  key: string
-  positon: [number, number, number]
+  position: [number, number, number]
   name: string
 }
 
@@ -23,7 +22,8 @@ type PlanetAppearanceData = {
     hasMoon?: boolean,
     moonTexture?: string,
     hasRings?: boolean,
-    ringTexture?: string
+    ringTexture?: string,
+    orbitDiameter?: number
 }
 
 const Planet: React.FC<PlanetProps> = ({position, name}) => {
@@ -40,7 +40,7 @@ const Planet: React.FC<PlanetProps> = ({position, name}) => {
     if (!planetInfo) return null
 
     const { radiusKm, color, scale } = planetInfo
-    const size = (radiusKm / 6371) * scale * 0.5 // skala względem Ziemi
+    const size = radiusKm * scale
     const distance = new THREE.Vector3(...position).length()
 
     return (
