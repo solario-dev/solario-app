@@ -11,6 +11,9 @@ public class SimulationService
     private readonly object _lock = new();
     private readonly List<Planet> _planets = new();
     private readonly Dictionary<int, Player> _players = new();
+    
+    // Cache mapujący ID gracza na jego skórkę
+    private readonly Dictionary<int, string> _playerSkins = new();
 
     public SimulationService(ILogger<SimulationService> logger)
     {
@@ -25,9 +28,6 @@ public class SimulationService
     public float PlanetScale { get; set; } = 1.0f;
     public float SimSpeed { get; set; } = 1.0f;
 
-    // ----------------------------
-    // PLANETS
-    // ----------------------------
     public void InitPlanet(string name, float orbitDiameter, float yearLength, float dayLength, float planetDiameter)
     {
         lock (_lock)
@@ -50,52 +50,29 @@ public class SimulationService
         }
     }
 
-    public string GetPlanetsJson()
-    {
-        lock (_lock)
-        {
-            return JsonSerializer.Serialize(_planets, new JsonSerializerOptions { WriteIndented = true });
-        }
-    }
-
-    // ----------------------------
-    // PLAYERS
-    // ----------------------------
-    public void InitPlayer(int id, float x, float y, float z, float rotation, float speed)
+    public void InitPlayer(int id, float x, float y, float z, float rotation, float speed, string skin = "default")
     {
         lock (_lock)
         {
             if (!_players.ContainsKey(id))
-                _players[id] = new Player(id, x, y, z, rotation, speed);
+            {
+                _players[id] = new Player(id, x, y, z, rotation, speed, skin);
+                _playerSkins[id] = skin;
+            }
         }
     }
 
-    public bool UpdatePlayerRotation(int id, float newRotation)
+    // Pozwala zmienić skórkę w trakcie trwania symulacji
+    public void UpdatePlayerSkin(int id, string skin)
     {
         lock (_lock)
         {
-            if (_players.TryGetValue(id, out var p))
+            if (_players.TryGetValue(id, out var existing))
             {
-                p.Turn(newRotation);
-                return true;
+                // Tworzymy nową instancję gracza z nowym skinem (Player jest immutable)
+                _players[id] = new Player(id, existing.PosX, existing.PosY, existing.PosZ, existing.Rotation, existing.Speed, skin);
+                _playerSkins[id] = skin;
             }
-            return false;
-        }
-    }
-
-    public bool UpdatePlayerSpeed(int id, float newSpeed)
-    {
-        lock (_lock)
-        {
-            if (_players.TryGetValue(id, out var p))
-            {
-                typeof(Player)
-                    .GetProperty(nameof(Player.Speed))?
-                    .SetValue(p, newSpeed);
-
-                return true;
-            }
-            return false;
         }
     }
 
@@ -103,31 +80,11 @@ public class SimulationService
     {
         lock (_lock)
         {
+            _playerSkins.Remove(id);
             return _players.Remove(id);
         }
     }
 
-    public List<Player> GetPlayersSnapshot()
-    {
-        lock (_lock)
-        {
-            return _players.Values
-                .Select(p => new Player(p.Id, p.PosX, p.PosY, p.PosZ, p.Rotation, p.Speed))
-                .ToList();
-        }
-    }
-
-    public string GetPlayersJson()
-    {
-        lock (_lock)
-        {
-            return JsonSerializer.Serialize(_players.Values, new JsonSerializerOptions { WriteIndented = true });
-        }
-    }
-
-    // ----------------------------
-    // FULL STATE JSON (bez nazw planet)
-    // ----------------------------
     public string GetFullStateJson(int selfPlayerId)
     {
         lock (_lock)
@@ -143,7 +100,8 @@ public class SimulationService
                     x = self.PosX,
                     y = self.PosY,
                     z = self.PosZ,
-                    rot = self.Rotation
+                    rot = self.Rotation,
+                    skin = self.Skin
                 },
                 others = _players.Values
                     .Where(p => p.Id != selfPlayerId)
@@ -153,7 +111,8 @@ public class SimulationService
                         x = p.PosX,
                         y = p.PosY,
                         z = p.PosZ,
-                        rot = p.Rotation
+                        rot = p.Rotation,
+                        skin = p.Skin
                     }).ToList(),
                 bodies = _planets.Select(p => new
                 {
@@ -164,20 +123,16 @@ public class SimulationService
                 }).ToList()
             };
 
-            return JsonSerializer.Serialize(jsonObj, new JsonSerializerOptions { WriteIndented = true });
+            return JsonSerializer.Serialize(jsonObj, new JsonSerializerOptions { WriteIndented = false });
         }
     }
 
-    // ----------------------------
-    // APPLY PLAYER INPUT
-    // ----------------------------
     public void ApplyPlayerInput(int playerId, PlayerInput input)
     {
         lock (_lock)
         {
             if (_players.TryGetValue(playerId, out var player))
             {
-                // Ustawiamy flagi na podstawie aktualnego stanu klawiszy
                 player.SetTurnLeft(input.Keys.Left);
                 player.SetTurnRight(input.Keys.Right);
                 player.SetMoveForward(input.Keys.Forward);
@@ -187,21 +142,12 @@ public class SimulationService
         }
     }
 
-    // ----------------------------
-    // SIMULATION LOOP
-    // ----------------------------
     public void Start()
     {
-        if (_running)
-        {
-            _logger.LogWarning("Simulation is already running");
-            return;
-        }
-        _logger.LogInformation("Starting simulation with {PlanetCount} planets and {PlayerCount} players", _planets.Count, _players.Count);
+        if (_running) return;
         _running = true;
         _thread = new Thread(RunLoop) { IsBackground = true };
         _thread.Start();
-        _logger.LogInformation("Simulation thread started");
     }
 
     public void Stop()
@@ -212,8 +158,6 @@ public class SimulationService
 
     private void RunLoop()
     {
-        _logger.LogInformation("Simulation loop started");
-
         while (_running)
         {
             lock (_lock)
@@ -222,12 +166,9 @@ public class SimulationService
                     p.Move(_dt * SimSpeed);
 
                 foreach (var player in _players.Values)
-                    player.PerformMovement(_dt * SimSpeed); // ruch i obrót gracza raz na tick
+                    player.PerformMovement(_dt * SimSpeed);
             }
-
             Thread.Sleep((int)(_dt * 1000));
         }
-
-        _logger.LogInformation("Simulation loop stopped");
     }
 }

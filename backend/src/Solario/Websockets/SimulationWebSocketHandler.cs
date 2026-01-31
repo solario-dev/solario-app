@@ -28,7 +28,6 @@ namespace Solario.Websockets
 
             try
             {
-                // Task do odbierania wiadomości od klienta (input)
                 var receiveTask = Task.Run(async () =>
                 {
                     while (webSocket.State == WebSocketState.Open && !cts.Token.IsCancellationRequested)
@@ -39,7 +38,6 @@ namespace Solario.Websockets
 
                             if (result.MessageType == WebSocketMessageType.Close)
                             {
-                                _logger.LogInformation("WebSocket close message received");
                                 cts.Cancel();
                                 break;
                             }
@@ -51,26 +49,19 @@ namespace Solario.Websockets
                             {
                                 if (selfPlayerId != pid)
                                 {
-                                    _logger.LogInformation("Player {PlayerId} connected via WebSocket", pid);
+                                    // Tutaj normalnie pobralibyśmy skin gracza z bazy danych
+                                    // Na ten moment inicjujemy z 'default' lub tym co już jest w symulacji
+                                    _simulationService.InitPlayer(pid, 0, 0, 0, 0, 1, "default"); 
                                 }
                                 selfPlayerId = pid;
                                 _simulationService.ApplyPlayerInput(pid, input);
                             }
                         }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch (WebSocketException ex)
-                        {
-                            _logger.LogWarning(ex, "WebSocket exception in receive task");
-                            cts.Cancel();
-                            break;
-                        }
+                        catch (OperationCanceledException) { break; }
+                        catch (WebSocketException) { cts.Cancel(); break; }
                     }
                 }, cts.Token);
 
-                // Task do wysyłania stanu co ~33ms (30 FPS)
                 var sendTask = Task.Run(async () =>
                 {
                     while (webSocket.State == WebSocketState.Open && !cts.Token.IsCancellationRequested)
@@ -87,29 +78,19 @@ namespace Solario.Websockets
                                 cts.Token
                             );
 
-                            await Task.Delay(33, cts.Token); // 30 FPS
+                            await Task.Delay(33, cts.Token);
                         }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch (WebSocketException ex)
-                        {
-                            _logger.LogWarning(ex, "WebSocket exception in send task");
-                            cts.Cancel();
-                            break;
-                        }
+                        catch (OperationCanceledException) { break; }
+                        catch (WebSocketException) { cts.Cancel(); break; }
                     }
                 }, cts.Token);
 
-                // Czekaj aż oba zadania się zakończą
                 await Task.WhenAny(receiveTask, sendTask);
                 cts.Cancel();
                 await Task.WhenAll(receiveTask, sendTask);
             }
             finally
             {
-                _logger.LogInformation("WebSocket connection closed for player {PlayerId}", selfPlayerId);
                 cts.Dispose();
                 if (webSocket.State != WebSocketState.Closed)
                 {

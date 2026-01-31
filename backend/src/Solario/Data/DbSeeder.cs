@@ -52,79 +52,42 @@ namespace Solario.Data
                 await _userRepo.CreateAsync(user);
             }
 
-            var items = await _shopRepo.GetAllAsync();
-            if (!items.Any())
+            var existingItems = await _shopRepo.GetAllAsync();
+            
+            var passports = new List<ShopItem>
             {
-                var passports = new List<ShopItem>
-                {
-                    new ShopItem
-                    {
-                        Name = "Mercury Passport",
-                        Description = "Authorization to land on the scorched surface of Mercury.",
-                        Price = 500,
-                        Type = "passport",
-                        ImageUrl = "/textures/mercury.jpg"
-                    },
-                    new ShopItem
-                    {
-                        Name = "Venus Passport",
-                        Description = "Clearance for atmospheric entry into Venus.",
-                        Price = 1000,
-                        Type = "passport",
-                        ImageUrl = "/textures/venus.jpg"
-                    },
-                    new ShopItem
-                    {
-                        Name = "Earth Passport",
-                        Description = "License to revisit the cradle of humanity.",
-                        Price = 1500,
-                        Type = "passport",
-                        ImageUrl = "/textures/earth.jpg"
-                    },
-                    new ShopItem
-                    {
-                        Name = "Mars Passport",
-                        Description = "Permit for the red dust colonies.",
-                        Price = 2000,
-                        Type = "passport",
-                        ImageUrl = "/textures/mars.jpg"
-                    },
-                    new ShopItem
-                    {
-                        Name = "Jupiter Passport",
-                        Description = "Access to the gas giant's orbital stations.",
-                        Price = 4000,
-                        Type = "passport",
-                        ImageUrl = "/textures/jupiter.jpg"
-                    },
-                    new ShopItem
-                    {
-                        Name = "Saturn Passport",
-                        Description = "Clearance to navigate the rings of Saturn.",
-                        Price = 6000,
-                        Type = "passport",
-                        ImageUrl = "/textures/saturn.jpg"
-                    },
-                    new ShopItem
-                    {
-                        Name = "Uranus Passport",
-                        Description = "Authorization for the icy giant exploration.",
-                        Price = 9000,
-                        Type = "passport",
-                        ImageUrl = "/textures/uranus.jpg"
-                    },
-                    new ShopItem
-                    {
-                        Name = "Neptune Passport",
-                        Description = "Deep space permit for the farthest planet.",
-                        Price = 12000,
-                        Type = "passport",
-                        ImageUrl = "/textures/neptune.jpg"
-                    }
-                };
+                new ShopItem { Name = "Mercury Passport", Price = 500, Type = "passport", ImageUrl = "/textures/mercury.jpg", Description = "Permit for Mercury." },
+                new ShopItem { Name = "Venus Passport", Price = 1000, Type = "passport", ImageUrl = "/textures/venus.jpg", Description = "Permit for Venus." },
+                new ShopItem { Name = "Earth Passport", Price = 1500, Type = "passport", ImageUrl = "/textures/earth.jpg", Description = "Permit for Earth." },
+                new ShopItem { Name = "Mars Passport", Price = 2000, Type = "passport", ImageUrl = "/textures/mars.jpg", Description = "Permit for Mars." },
+                new ShopItem { Name = "Jupiter Passport", Price = 4000, Type = "passport", ImageUrl = "/textures/jupiter.jpg", Description = "Permit for Jupiter." },
+                new ShopItem { Name = "Saturn Passport", Price = 6000, Type = "passport", ImageUrl = "/textures/saturn.jpg", Description = "Permit for Saturn." },
+                new ShopItem { Name = "Uranus Passport", Price = 9000, Type = "passport", ImageUrl = "/textures/uranus.jpg", Description = "Permit for Uranus." },
+                new ShopItem { Name = "Neptune Passport", Price = 12000, Type = "passport", ImageUrl = "/textures/neptune.jpg", Description = "Permit for Neptune." }
+            };
 
-                foreach (var item in passports)
+            var skins = new List<ShopItem>
+            {
+                new ShopItem
                 {
+                    Id = "falcon_mk1",
+                    Name = "Falcon MK-1",
+                    Description = "A legendary smuggler ship. Very fast, very dangerous.",
+                    Price = 50000,
+                    Type = "skin",
+                    ImageUrl = "/textures/falcon.png"
+                }
+            };
+
+            var allItems = passports.Concat(skins);
+
+            foreach (var item in allItems)
+            {
+                if (!existingItems.Any(i => i.Name == item.Name))
+                {
+                    // Ustawiamy ID 'falcon', żeby łatwo wykryć ten model na froncie
+                    if (item.Type == "skin") item.Id = "falcon"; 
+                    
                     await _shopRepo.CreateAsync(item);
                 }
             }

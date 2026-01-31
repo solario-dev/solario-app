@@ -9,4 +9,5 @@ export interface User {
   wins: number;
   conqueredPlanets: string[];
   inventory: string[];
+  equippedSkin: string;
 }
