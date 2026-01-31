@@ -10,7 +10,6 @@ using Solario.Configuration;
 using Solario.Data;
 using Solario.Repository;
 using Microsoft.Extensions.Configuration;
-using Solario.Services; // namespace dla SimulationService
 using Solario.Services;
 using Solario.Websockets;
 using System.Net.WebSockets;
@@ -18,21 +17,15 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Konfiguracja Serilog
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
-    // .WriteTo.File("logs/solario-.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
-// builder.Host.UseSerilog((ctx, config) => 
-//     config.ConfigureConsole(ctx.Configuration));
 
-// Load .env if present (harmless if not)
 DotEnv.Load();
 
-// --- Read Mongo connection string from multiple possible sources (env/appsettings)
 string? mongoConn =
     Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING") ??
     Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING") ??
@@ -47,18 +40,7 @@ string? mongoDb =
 
 if (string.IsNullOrEmpty(mongoConn) || string.IsNullOrEmpty(mongoDb))
 {
-    var msg = $@"Mongo configuration missing.
-Checked environment variables:
-  MONGODB_CONNECTION_STRING={Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING")}
-  MONGO_CONNECTION_STRING={Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING")}
-  MONGODB_DATABASE={Environment.GetEnvironmentVariable("MONGODB_DATABASE")}
-  MONGO_DATABASE={Environment.GetEnvironmentVariable("MONGO_DATABASE")}
-Checked appsettings:
-  MongoDbSettings:ConnectionString={builder.Configuration["MongoDbSettings:ConnectionString"]}
-  MongoDbSettings:DatabaseName={builder.Configuration["MongoDbSettings:DatabaseName"]}
-  MongoDb:ConnectionString={builder.Configuration["MongoDb:ConnectionString"]}
-  MongoDb:Database={builder.Configuration["MongoDb:Database"]}
-Please set MONGODB_CONNECTION_STRING and MONGODB_DATABASE (or update appsettings/Program.cs).";
+    var msg = $@"Mongo configuration missing. Please set MONGODB_CONNECTION_STRING and MONGODB_DATABASE.";
     throw new InvalidOperationException(msg);
 }
 
@@ -66,13 +48,11 @@ var mongoSettings = new MongoDbSettings { ConnectionString = mongoConn, Database
 builder.Services.AddSingleton(mongoSettings);
 builder.Services.AddSingleton<MongoContext>();
 
-// Repository
 builder.Services.AddScoped<UserRepository>();
-// Dodane brakujące serwisy dla ShopController
 builder.Services.AddScoped<ShopRepository>();
 builder.Services.AddScoped<ShopService>();
+builder.Services.AddScoped<DbSeeder>();
 
-// JWT (optional)
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "solario";
 var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "solario_frontend";
@@ -99,16 +79,12 @@ if (!string.IsNullOrEmpty(jwtKey))
     });
 }
 
-// CORS
 builder.Services.AddCors(p => p.AddPolicy("AllowReact", policy =>
     policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
           .AllowAnyHeader()
           .AllowAnyMethod()
           .AllowCredentials()));
 
-// Controllers + Swagger
-// ------------------------
-// Rejestracja usług
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -117,10 +93,12 @@ builder.Services.AddSingleton<SimulationWebSocketHandler>();
 
 var app = builder.Build();
 
-// Swagger UI at root
-// ------------------------
-// Middleware
-// ------------------------
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+    await seeder.SeedAsync();
+}
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -130,7 +108,6 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 app.UseCors("AllowReact");
-// Dodane, aby serwować obrazki przedmiotów ze sklepu
 app.UseStaticFiles(); 
 
 if (!string.IsNullOrEmpty(jwtKey))
@@ -143,13 +120,11 @@ else
     app.UseAuthorization();
 }
 
-// WebSocket
 app.UseWebSockets(new WebSocketOptions
 {
     KeepAliveInterval = TimeSpan.FromSeconds(30)
 });
 
-// **Nowy WebSocket endpoint**
 app.Map("/simulations/socket", async context =>
 {
     if (context.WebSockets.IsWebSocketRequest)
@@ -160,36 +135,16 @@ app.Map("/simulations/socket", async context =>
     }
     else
     {
-        context.Response.StatusCode = 400; // nie WebSocket
+        context.Response.StatusCode = 400;
     }
 });
 
-// Kontrolery HTTP
 app.MapControllers();
 
-// ------------------------
-// Inicjalizacja i start symulacji
-// ------------------------
 var simulation = app.Services.GetRequiredService<SimulationService>();
-
-// Globalne ustawienia symulacji
-simulation.OrbitScale = 1.0f;    // możemy skalować odległości
-simulation.PlanetScale = 1.0f;   // możemy skalować rozmiary planet
-simulation.SimSpeed = 1.0f;      // 1 tick = 1/30 s
-
-// Init planety (OrbitDiameter w jednostkach, YearLength w sekundach symulacji, DayLength w sekundach, PlanetDiameter w jednostkach)
-// simulation.InitPlanet("Mercury", 58, 10, 6, 2);
-// simulation.InitPlanet("Venus", 108, 25, 10, 4);
-// simulation.InitPlanet("Earth", 150, 30, 10, 4);
-// simulation.InitPlanet("Mars", 228, 56, 10, 3);
-// simulation.InitPlanet("Jupiter", 778, 360, 10, 10);
-// simulation.InitPlanet("Saturn", 1427, 800, 10, 9);
-// simulation.InitPlanet("Uranus", 2871, 2500, 10, 7);
-// simulation.InitPlanet("Neptune", 4495, 5000, 10, 7);
-
-// Skala ODLEGŁOŚCI: ~10 jednostek sceny = 1 milion km
-// Skala ROZMIARU: ~0.00001 jednostki sceny = 1 km (Średnica)
-// Skala CZASU: 1 jednostka czasu symulacji (dt) = 1 dzień ziemski (uproszczenie)
+simulation.OrbitScale = 1.0f;
+simulation.PlanetScale = 1.0f;
+simulation.SimSpeed = 1.0f;
 
 simulation.InitPlanet("Mercury", 1158f, 87.97f, 4222.6f, 0.048f);
 simulation.InitPlanet("Venus", 1661f, 224.70f, 5832.5f, 0.121f);
@@ -200,16 +155,10 @@ simulation.InitPlanet("Saturn", 14816f, 10759.22f, 10.7f, 1.164f);
 simulation.InitPlanet("Uranus", 29304f, 30687.15f, 17.2f, 0.507f);
 simulation.InitPlanet("Neptune", 45530f, 60190.03f, 16.1f, 0.492f);
 
-// Gracze
-simulation.InitPlayer(0, 0, 0, 0, 0, 1);        // start w centrum układu
+simulation.InitPlayer(0, 0, 0, 0, 0, 1);
 
-// Start symulacji
 simulation.Start();
 
-
-// ------------------------
-// Uruchomienie aplikacji
-// ------------------------
 try
 {
     Log.Information("Starting Solario application");

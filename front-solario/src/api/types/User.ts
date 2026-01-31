@@ -1,5 +1,12 @@
 export interface User {
-  id: number;
-  name: string;
+  id: string;
+  username: string;
   email: string;
+  role: string;
+  level: number;
+  credits: number;
+  quizzesCompleted: number;
+  wins: number;
+  conqueredPlanets: string[];
+  inventory: string[];
 }

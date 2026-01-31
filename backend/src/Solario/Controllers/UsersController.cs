@@ -3,7 +3,10 @@ using Solario.Models;
 using Solario.Repository;
 using BCrypt.Net;
 using MongoDB.Bson;
-
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Solario.Controllers
 {
@@ -12,10 +15,12 @@ namespace Solario.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserRepository _repo;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(UserRepository repo)
+        public UsersController(UserRepository repo, IConfiguration configuration)
         {
             _repo = repo;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -43,10 +48,27 @@ namespace Solario.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
-            // hash password
+            var existingUser = await _repo.GetByEmailAsync(user.Email);
+            if (existingUser != null)
+                return BadRequest("Email already exists");
+
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
             var created = await _repo.CreateAsync(user);
             return Ok(created);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var user = await _repo.GetByEmailAsync(request.Email);
+            if (user == null)
+                return Unauthorized("Invalid email or password");
+
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+                return Unauthorized("Invalid email or password");
+
+            var token = GenerateJwtToken(user);
+            return Ok(new { token, user });
         }
 
         [HttpPut("{id}")]
@@ -63,6 +85,43 @@ namespace Solario.Controllers
             var deleted = await _repo.DeleteAsync(id);
             if (!deleted) return NotFound();
             return NoContent();
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var keyString = _configuration["Jwt:Key"];
+            
+            if (string.IsNullOrEmpty(keyString))
+            {
+                keyString = Environment.GetEnvironmentVariable("JWT_KEY");
+            }
+
+            if (string.IsNullOrEmpty(keyString) || keyString.Length < 32)
+            {
+                keyString = "super_dlugi_sekretny_klucz_ktory_ma_32_znaki_!";
+            }
+
+            var key = Encoding.UTF8.GetBytes(keyString);
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id!),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("role", user.Role),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddHours(24),
+                Issuer = _configuration["Jwt:Issuer"] ?? Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "solario",
+                Audience = _configuration["Jwt:Audience"] ?? Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "solario_frontend",
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

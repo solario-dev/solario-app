@@ -7,19 +7,22 @@ import Shop from './pages/Shop.tsx'
 import Navbar from './components/navbar/Navbar.tsx'
 import LandingPage from './pages/LandingPage.tsx'
 import Training from './pages/Training.tsx'
+import LoginPage from './pages/LoginPage.tsx'
+import RegisterPage from './pages/RegisterPage.tsx'
 import { useEffect } from 'react'
 import { getGames } from './api/games.ts'
+import { GameStateProvider } from './context/GameStateContext.tsx'
+import { SimulationStateProvider } from './context/SimulationStateContext.tsx'
+import { UserProvider } from './context/UserContext.tsx'
 
 export default function App() {
 
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const games = await getGames();
-        console.log("Games fetched in App.tsx:", games);
+        await getGames();
       } catch (error) {
         console.log("Nie udało się pobrać gry.");
-        console.error("Error fetching games in App.tsx:", error);
       }
     };
 
@@ -27,23 +30,27 @@ export default function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        {/* Strona główna */}
-        <Route path="/" element={<LandingPage />} />
+    <UserProvider>
+        <GameStateProvider>
+            <SimulationStateProvider>
+                <BrowserRouter>
+                    <Navbar />
+                    <Routes>
+                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/shop" element={<Shop />} />
 
-        {/* Inne podstrony */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/shop" element={<Shop />} />
+                        <Route path="/training" element={<Training />} />
 
-         {/* Rozgrywka treningowa */}
-        <Route path="/training" element={<Training />} />
-
-        {/* Opcjonalnie: obsługa nieistniejących stron */}
-        <Route path="*" element={<h2>404 Nie znaleziono strony</h2>} />
-      </Routes>
-    </BrowserRouter>
+                        <Route path="*" element={<h2>404 Nie znaleziono strony</h2>} />
+                    </Routes>
+                </BrowserRouter>
+            </SimulationStateProvider>
+        </GameStateProvider>
+    </UserProvider>
   )
 }

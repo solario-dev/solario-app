@@ -1,22 +1,27 @@
-// import api from "./client";
+import api from "./client";
+import type { User } from "./types/User";
 
-// import type { User, LoginResponse } from "./types/User";
+export interface LoginResponse {
+  token: string;
+  user: User;
+}
 
-// // GET /api/users/{id}
-// export const getUserById = async (id: number): Promise<User> => {
-//   const response = await api.get<User>(`/users/${id}`);
-//   return response.data;
-// };
+export interface LoginRequest {
+    email: string;
+    password: string;
+}
 
-// // POST /api/users/login
-// export const loginUser = async (
-//   email: string,
-//   password: string
-// ): Promise<LoginResponse> => {
-//   const response = await api.post<LoginResponse>("/users/login", {
-//     email,
-//     password,
-//   });
+export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
+  const response = await api.post<LoginResponse>("/api/users/login", data);
+  return response.data;
+};
 
-//   return response.data;
-// };
+export const registerUser = async (userData: Partial<User>): Promise<User> => {
+    const response = await api.post<User>("/api/users/register", userData);
+    return response.data;
+};
+
+export const getUserById = async (id: string): Promise<User> => {
+  const response = await api.get<User>(`/api/users/${id}`);
+  return response.data;
+};
