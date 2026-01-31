@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { useUser } from "../context/UserContext";
 import { Navigate } from "react-router-dom";
+import { getShopItems } from "../api/shop";
+import type { ShopItem } from "../api/types/ShopItem";
 
 const sampleData = [
   { day: "Mon", score: 8 },
@@ -25,6 +28,19 @@ const allPlanets = [
 
 export default function Profile() {
   const { user, isAuthenticated } = useUser();
+  const [shopItems, setShopItems] = useState<ShopItem[]>([]);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+        try {
+            const items = await getShopItems();
+            setShopItems(items);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+    fetchItems();
+  }, []);
 
   if (!isAuthenticated || !user) {
       return <Navigate to="/login" replace />;
@@ -32,9 +48,7 @@ export default function Profile() {
 
   return (
     <main className="min-h-screen bg-black text-[var(--color-primary)] flex p-8 font-sans mt-16">
-      {/* ===== LEWA KOLUMNA ===== */}
       <section className="flex-1 pr-10 border-r border-[var(--color-primary)]/30">
-        {/* Avatar i dane gracza */}
         <div className="flex items-center gap-8 mb-10">
           <div className="w-32 h-32 rounded-full border border-[var(--color-primary)] flex items-center justify-center text-4xl bg-[var(--color-primary)]/10 shadow-[0_0_20px_rgba(0,255,240,0.3)]">
             🚀
@@ -52,26 +66,29 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Statystyki */}
-        <div className="flex space-x-8 mb-8">
+        <div className="flex gap-6 mb-8 flex-wrap">
           {[
-            { label: "QUIZZES", value: user.quizzesCompleted },
+            { label: "CREDITS", value: user.credits },
             { label: "WINS", value: user.wins },
             { label: "LEVEL", value: user.level },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="text-center border border-[var(--color-primary)]/40 rounded-lg p-3 w-28 bg-[var(--color-primary)]/5"
-            >
-              <div className="text-2xl font-bold text-[var(--color-accent)] font-orbit">
-                {item.value}
-              </div>
-              <div className="text-xs tracking-wider font-geist text-[var(--color-primary)]/60">{item.label}</div>
-            </div>
-          ))}
+          ].map((item) => {
+            const valueStr = item.value.toLocaleString();
+            const isLong = valueStr.length > 6;
+            
+            return (
+                <div
+                key={item.label}
+                className="text-center border border-[var(--color-primary)]/40 rounded-lg p-3 min-w-[7rem] px-4 bg-[var(--color-primary)]/5 flex flex-col justify-center"
+                >
+                <div className={`${isLong ? "text-lg" : "text-2xl"} font-bold text-[var(--color-accent)] font-orbit whitespace-nowrap`}>
+                    {valueStr}
+                </div>
+                <div className="text-xs tracking-wider font-geist text-[var(--color-primary)]/60">{item.label}</div>
+                </div>
+            );
+          })}
         </div>
 
-        {/* Conquered Planets */}
         <div className="mb-10">
           <h2 className="text-xl font-semibold mb-3 tracking-wide border-b border-[var(--color-primary)]/20 pb-2">
             CONQUERED PLANETS
@@ -94,7 +111,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Quizzes Results */}
         <div>
           <h2 className="text-xl font-semibold mb-3 tracking-wide border-b border-[var(--color-primary)]/20 pb-2">
             QUIZZES RESULTS
@@ -111,19 +127,34 @@ export default function Profile() {
         </div>
       </section>
 
-      {/* ===== PRAWA KOLUMNA ===== */}
       <section className="w-1/3 pl-10">
         <h2 className="text-xl font-semibold mb-6 tracking-wide border-b border-[var(--color-primary)]/20 pb-2">INVENTORY</h2>
-        <div className="grid grid-cols-3 gap-4">
-            {user.inventory.length > 0 ? user.inventory.map((item, i) => (
-                 <div
-                 key={i}
-                 className="aspect-square bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/50 rounded-lg flex items-center justify-center relative group"
-               >
-                   <span className="text-xs">{item}</span>
-               </div>
-            )) : (
-                <p className="col-span-3 text-sm text-[var(--color-primary)]/50 font-geist">Inventory empty. Visit the shop.</p>
+        <div className="grid grid-cols-2 gap-4">
+            {user.inventory.length > 0 ? user.inventory.map((itemId, i) => {
+                 const item = shopItems.find(si => si.id === itemId);
+                 
+                 return (
+                     <div
+                     key={i}
+                     className="bg-[var(--color-primary)]/5 border border-[var(--color-primary)]/30 rounded-lg p-3 flex flex-col items-center justify-center relative group hover:bg-[var(--color-primary)]/10 transition-colors"
+                   >
+                       {item ? (
+                           <>
+                             <div className="w-10 h-10 rounded-full bg-black/50 mb-2 overflow-hidden border border-[var(--color-primary)]/20">
+                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover opacity-80" />
+                             </div>
+                             <span className="text-xs text-center font-orbit">{item.name}</span>
+                             <span className="text-[10px] text-[var(--color-primary)]/50 mt-1 uppercase">{item.type}</span>
+                           </>
+                       ) : (
+                           <span className="text-xs">Unknown Item ({itemId.substring(0,4)}...)</span>
+                       )}
+                   </div>
+                 )
+            }) : (
+                <p className="col-span-2 text-sm text-[var(--color-primary)]/50 font-geist text-center py-4">
+                    Inventory empty. Visit the Shop to buy Passports.
+                </p>
             )}
         </div>
       </section>
