@@ -11,7 +11,7 @@ export default function Training() {
   const [searchParams, setSearchParams] = useSearchParams();
   const planetName = searchParams.get('planet');
 
-  const { connected, stop, ws } = useSimulationSocket("ws://localhost:5000/simulations/socket");
+  const { connected, stop, ws } = useSimulationSocket("ws://localhost:5001/simulations/socket");
 
   // PlayerInput tylko gdy WebSocket jest gotowy
   usePlayerInput(connected ? ws : null, "0");

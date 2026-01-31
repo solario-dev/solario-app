@@ -20,6 +20,9 @@ services:
       - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
       - MONGODB_DATABASE=SolarioDb
       - ASPNETCORE_ENVIRONMENT=Development
+      - JWT_KEY=super_dlugi_sekretny_klucz_ktory_ma_32_znaki_!
+      - JWT_ISSUER=solario
+      - JWT_AUDIENCE=solario_frontend
     depends_on:
       - mongo
 

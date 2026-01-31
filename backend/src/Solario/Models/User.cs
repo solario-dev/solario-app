@@ -18,6 +18,9 @@ namespace Solario.Models
         [BsonElement("passwordHash")]
         public string PasswordHash { get; set; } = null!;
 
+        [BsonElement("role")]
+        public string Role { get; set; } = "User";
+
         [BsonElement("level")]
         public int Level { get; set; } = 1;
         

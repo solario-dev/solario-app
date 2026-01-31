@@ -1,15 +1,22 @@
 import { Link } from "react-router-dom";
 import Saldo from "./Saldo";
 import { useGameState } from "../../hooks/useGameState";
+import { useUser } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const { state, quitTraining } = useGameState();
+  const { isAuthenticated, logout, user } = useUser();
   const navigate = useNavigate();
 
   function handleQuit() {
     quitTraining();
     navigate("/dashboard");
+  }
+
+  function handleLogout() {
+      logout();
+      navigate("/login");
   }
 
   return (
@@ -20,6 +27,7 @@ export default function Navbar() {
         border-b border-[var(--color-primary)]/20
         backdrop-blur-md
         shadow-[0_0_20px_rgba(0,255,240,0.15)]
+        fixed top-0 w-full z-[1000]
       "
     >
       {/* Logo / nazwa aplikacji */}
@@ -33,12 +41,12 @@ export default function Navbar() {
         "
       >
         SOLARIO
-        <p className="text-sm">{state}</p>
+        <p className="text-sm font-geist text-[var(--color-primary)]/50">{state !== "idle" ? state : ""}</p>
       </Link>
 
       {/* Linki po prawej stronie */}
       <div className="flex items-center space-x-8 text-lg">
-        <Saldo />
+        {isAuthenticated && <Saldo />}
 
         {state === "training" && (
             <button
@@ -55,38 +63,54 @@ export default function Navbar() {
 
         {state != "game" && state != "training" && (
           <div className="flex items-center space-x-8 text-lg">
-            <Link
-              to="/shop"
-              className="
-                text-[var(--color-primary)] font-geist
-                hover:text-white hover:drop-shadow-[0_0_6px_var(--color-primary)]
-                transition-all duration-300
-              "
-            >
-              SHOP
-            </Link>
+            {isAuthenticated ? (
+                <>
+                    <Link
+                    to="/shop"
+                    className="
+                        text-[var(--color-primary)] font-geist
+                        hover:text-white hover:drop-shadow-[0_0_6px_var(--color-primary)]
+                        transition-all duration-300
+                    "
+                    >
+                    SHOP
+                    </Link>
 
-            <Link
-              to="/profile"
-              className="
-                text-[var(--color-primary)] font-geist
-                hover:text-white hover:drop-shadow-[0_0_6px_var(--color-primary)]
-                transition-all duration-300
-              "
-            >
-              PROFILE
-            </Link>
+                    <Link
+                    to="/profile"
+                    className="
+                        text-[var(--color-primary)] font-geist
+                        hover:text-white hover:drop-shadow-[0_0_6px_var(--color-primary)]
+                        transition-all duration-300
+                    "
+                    >
+                    PROFILE ({user?.username})
+                    </Link>
 
-            <Link
-              to="/"
-              className="
-                text-[var(--color-primary)] font-geist
-                hover:text-[#FF365D] hover:drop-shadow-[0_0_6px_#FF365D]
-                transition-all duration-300
-              "
-            >
-              LOGOUT
-            </Link>
+                    <button
+                    onClick={handleLogout}
+                    className="
+                        text-[var(--color-primary)] font-geist
+                        hover:text-[#FF365D] hover:drop-shadow-[0_0_6px_#FF365D]
+                        transition-all duration-300
+                        uppercase
+                    "
+                    >
+                    LOGOUT
+                    </button>
+                </>
+            ) : (
+                 <Link
+                 to="/login"
+                 className="
+                     text-[var(--color-primary)] font-geist
+                     hover:text-white hover:drop-shadow-[0_0_6px_var(--color-primary)]
+                     transition-all duration-300
+                 "
+                 >
+                 LOGIN
+                 </Link>
+            )}
           </div>
         )}
 
