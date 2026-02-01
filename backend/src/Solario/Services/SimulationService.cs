@@ -142,6 +142,45 @@ public class SimulationService
         }
     }
 
+    public bool EnterQuiz(int playerId, string planetName)
+    {
+        lock (_lock)
+        {
+            if (_players.TryGetValue(playerId, out var player))
+            {
+                player.EnterOrbit(planetName);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public bool LeaveQuiz(int playerId)
+    {
+        lock (_lock)
+        {
+            if (_players.TryGetValue(playerId, out var player))
+            {
+                player.LeaveOrbit();
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public Player? GetPlayer(int playerId)
+    {
+        lock (_lock)
+        {
+            _players.TryGetValue(playerId, out var player);
+            return player;
+        }
+    }
+
+
+    // ----------------------------
+    // SIMULATION LOOP
+    // ----------------------------
     public void Start()
     {
         if (_running) return;
@@ -162,11 +201,32 @@ public class SimulationService
         {
             lock (_lock)
             {
-                foreach (var p in _planets)
-                    p.Move(_dt * SimSpeed);
+                foreach (var planet in _planets)
+                {
+                    planet.Move(_dt * SimSpeed);
+                }
+
+                foreach (var planet in _planets)
+                {
+                    var (dx, dz) = planet.GetDeltaMovement();
+
+                    if (dx == 0f && dz == 0f)
+                        continue;
+
+                    foreach (var player in _players.Values)
+                    {
+                        if (player.State == PlayerState.Quiz &&
+                        player.Orbit == planet.Name)
+                        {
+                        player.ApplyOrbitMovement(dx, dz);
+                        }
+                   }
+                }
 
                 foreach (var player in _players.Values)
+                {
                     player.PerformMovement(_dt * SimSpeed);
+                }
             }
             Thread.Sleep((int)(_dt * 1000));
         }

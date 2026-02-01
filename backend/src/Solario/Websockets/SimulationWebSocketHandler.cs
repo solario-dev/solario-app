@@ -43,19 +43,53 @@ namespace Solario.Websockets
                             }
 
                             var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                            var input = JsonSerializer.Deserialize<PlayerInput>(msg);
 
-                            if (input != null && input.Type == "input" && int.TryParse(input.PlayerId, out var pid))
+                            JsonDocument doc = JsonDocument.Parse(msg);
+                            var root = doc.RootElement;
+
+                            if (!root.TryGetProperty("type", out var typeProp))
+                            return;
+
+                            var type = typeProp.GetString();
+
+                            if (type == "input")
                             {
-                                if (selfPlayerId != pid)
+                                var input = JsonSerializer.Deserialize<PlayerInput>(msg);
+
+                                if (input != null && int.TryParse(input.PlayerId, out var pid))
                                 {
                                     // Tutaj normalnie pobralibyśmy skin gracza z bazy danych
                                     // Na ten moment inicjujemy z 'default' lub tym co już jest w symulacji
                                     _simulationService.InitPlayer(pid, 0, 0, 0, 0, 1, "default"); 
+                                    selfPlayerId = pid;
+                                    _simulationService.ApplyPlayerInput(pid, input);
                                 }
-                                selfPlayerId = pid;
-                                _simulationService.ApplyPlayerInput(pid, input);
                             }
+                            else if (type == "enter_quiz")
+                            {
+                                var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg);
+
+                                if (cmd != null &&
+                                    int.TryParse(cmd.PlayerId, out var pid) &&
+                                    !string.IsNullOrWhiteSpace(cmd.Planet))
+                                {
+                                    _logger.LogInformation("Player {PlayerId} entering quiz on {Planet}", pid, cmd.Planet);
+                                    selfPlayerId = pid;
+                                    _simulationService.EnterQuiz(pid, cmd.Planet);
+                                }
+                            }
+                            else if (type == "leave_quiz")
+                            {
+                                var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg);
+
+                                if (cmd != null && int.TryParse(cmd.PlayerId, out var pid))
+                                {
+                                    _logger.LogInformation("Player {PlayerId} leaving quiz", pid);
+                                    selfPlayerId = pid;
+                                    _simulationService.LeaveQuiz(pid);
+                                }
+                            }
+
                         }
                         catch (OperationCanceledException) { break; }
                         catch (WebSocketException) { cts.Cancel(); break; }
