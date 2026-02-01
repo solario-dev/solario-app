@@ -4,29 +4,32 @@ using Solario.Abstractions;
 using System.Text.Json;
 using Solario.Models;
 using Microsoft.Extensions.Logging;
+using Solario.Repository;
+using Microsoft.Extensions.DependencyInjection;
 
 public class SimulationService
 {
     private readonly ILogger<SimulationService> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly object _lock = new();
     private readonly List<Planet> _planets = new();
-    private readonly Dictionary<int, Player> _players = new();
+    private readonly Dictionary<string, Player> _players = new();
     
-    // Cache mapujący ID gracza na jego skórkę
-    private readonly Dictionary<int, string> _playerSkins = new();
+    private readonly Dictionary<string, string> _playerSkins = new();
 
-    public SimulationService(ILogger<SimulationService> logger)
+    public SimulationService(ILogger<SimulationService> logger, IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
+        _scopeFactory = scopeFactory;
     }
 
     private Thread? _thread;
     private bool _running = false;
     private float _dt = 1f / 30f;
 
+    public float SimSpeed { get; set; } = 1.0f;
     public float OrbitScale { get; set; } = 1.0f;
     public float PlanetScale { get; set; } = 1.0f;
-    public float SimSpeed { get; set; } = 1.0f;
 
     public void InitPlanet(string name, float orbitDiameter, float yearLength, float dayLength, float planetDiameter)
     {
@@ -50,7 +53,7 @@ public class SimulationService
         }
     }
 
-    public void InitPlayer(int id, float x, float y, float z, float rotation, float speed, string skin = "default")
+    public void InitPlayer(string id, float x, float y, float z, float rotation, float speed, string skin = "default")
     {
         lock (_lock)
         {
@@ -62,30 +65,77 @@ public class SimulationService
         }
     }
 
-    // Pozwala zmienić skórkę w trakcie trwania symulacji
-    public void UpdatePlayerSkin(int id, string skin)
+    public void UpdatePlayerSkin(string id, string skin)
     {
         lock (_lock)
         {
             if (_players.TryGetValue(id, out var existing))
             {
-                // Tworzymy nową instancję gracza z nowym skinem (Player jest immutable)
                 _players[id] = new Player(id, existing.PosX, existing.PosY, existing.PosZ, existing.Rotation, existing.Speed, skin);
                 _playerSkins[id] = skin;
             }
         }
     }
 
-    public bool RemovePlayer(int id)
+    public async Task RemovePlayerAsync(string id)
     {
+        Player? playerToRemove = null;
+
         lock (_lock)
         {
+            if (_players.TryGetValue(id, out var player))
+            {
+                playerToRemove = player;
+                _players.Remove(id);
+            }
             _playerSkins.Remove(id);
-            return _players.Remove(id);
+        }
+
+        if (playerToRemove != null)
+        {
+            await SavePlayerProgress(playerToRemove);
         }
     }
 
-    public string GetFullStateJson(int selfPlayerId)
+    private async Task SavePlayerProgress(Player player)
+    {
+        if (player.Id == "0") return;
+
+        try 
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var userRepo = scope.ServiceProvider.GetRequiredService<UserRepository>();
+                var user = await userRepo.GetByIdAsync(player.Id);
+
+                if (user != null)
+                {
+                    user.Credits += player.Points;
+                    user.QuizzesCompleted += player.QuestionsAnswered > 0 ? 1 : 0;
+                    user.Level += player.Points / 1000; 
+
+                    var currentPlanets = user.ConqueredPlanets.ToList();
+                    foreach(var p in player.VisitedPlanets)
+                    {
+                        if (!currentPlanets.Contains(p))
+                        {
+                            currentPlanets.Add(p);
+                        }
+                    }
+                    user.ConqueredPlanets = currentPlanets.ToArray();
+
+                    await userRepo.UpdateAsync(player.Id, user);
+                    _logger.LogInformation($"Saved progress for user {player.Id}. Earned {player.Points} credits.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to save progress for user {player.Id}");
+        }
+    }
+
+    public string GetFullStateJson(string selfPlayerId)
     {
         lock (_lock)
         {
@@ -127,7 +177,7 @@ public class SimulationService
         }
     }
 
-    public void ApplyPlayerInput(int playerId, PlayerInput input)
+    public void ApplyPlayerInput(string playerId, PlayerInput input)
     {
         lock (_lock)
         {
@@ -142,7 +192,7 @@ public class SimulationService
         }
     }
 
-    public bool EnterQuiz(int playerId, string planetName)
+    public bool EnterQuiz(string playerId, string planetName)
     {
         lock (_lock)
         {
@@ -155,7 +205,7 @@ public class SimulationService
         }
     }
 
-    public bool LeaveQuiz(int playerId)
+    public bool LeaveQuiz(string playerId)
     {
         lock (_lock)
         {
@@ -168,7 +218,7 @@ public class SimulationService
         }
     }
 
-    public Player? GetPlayer(int playerId)
+    public Player? GetPlayer(string playerId)
     {
         lock (_lock)
         {
@@ -177,10 +227,6 @@ public class SimulationService
         }
     }
 
-
-    // ----------------------------
-    // SIMULATION LOOP
-    // ----------------------------
     public void Start()
     {
         if (_running) return;
@@ -202,31 +248,24 @@ public class SimulationService
             lock (_lock)
             {
                 foreach (var planet in _planets)
-                {
                     planet.Move(_dt * SimSpeed);
-                }
 
                 foreach (var planet in _planets)
                 {
                     var (dx, dz) = planet.GetDeltaMovement();
-
-                    if (dx == 0f && dz == 0f)
-                        continue;
+                    if (dx == 0f && dz == 0f) continue;
 
                     foreach (var player in _players.Values)
                     {
-                        if (player.State == PlayerState.Quiz &&
-                        player.Orbit == planet.Name)
+                        if (player.State == PlayerState.Quiz && player.Orbit == planet.Name)
                         {
-                        player.ApplyOrbitMovement(dx, dz);
+                            player.ApplyOrbitMovement(dx, dz);
                         }
-                   }
+                    }
                 }
 
                 foreach (var player in _players.Values)
-                {
                     player.PerformMovement(_dt * SimSpeed);
-                }
             }
             Thread.Sleep((int)(_dt * 1000));
         }

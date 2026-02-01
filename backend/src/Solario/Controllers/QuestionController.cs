@@ -33,15 +33,13 @@ namespace Solario.Controllers
                     planet.Trim().ToLowerInvariant(),
                     count);
             
-            // Mapowanie z losowaniem kolejności odpowiedzi (Shuffle)
             var dtos = entities.Select(q => new QuestionDto 
             {
                 Id = q.Id,
                 Text = q.Text,
                 Answers = q.Answers
-                    .OrderBy(_ => Guid.NewGuid()) // Losowanie odpowiedzi
-                    .Select(a => new AnswerDto { Id = a.Id, Text = a.Text })
-                    .ToList()
+                    .OrderBy(_ => Guid.NewGuid())
+                    .Select(a => new AnswerDto { Id = a.Id, Text = a.Text }).ToList()
             });
 
             return Ok(dtos);
@@ -50,7 +48,7 @@ namespace Solario.Controllers
         [HttpPost("{id:guid}/answer")]
         public async Task<IActionResult> Answer(
             Guid id,
-            [FromQuery] int playerId,
+            [FromQuery] string playerId,
             [FromQuery] double remainingRatio,
             [FromBody] AnswerRequest request)
         {
@@ -69,7 +67,7 @@ namespace Solario.Controllers
         [HttpPost("{id:guid}/timeout")]
         public async Task<IActionResult> Timeout(
             Guid id,
-            [FromQuery] int playerId)
+            [FromQuery] string playerId)
         {
             await _service.HandleTimeoutAsync(playerId, id);
             return Ok();

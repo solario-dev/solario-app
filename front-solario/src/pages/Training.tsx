@@ -8,19 +8,23 @@ import { Planet3DView } from "../components/solar-system/Planet3DView";
 import { PlanetInfoPanel } from "../components/solar-system/PlanetInfoPanel";
 import { useSearchParams } from "react-router-dom";
 import QuizWindow from "../components/quiz/QuizWindow";
+import { useUser } from "../context/UserContext";
 
 export default function Training() {
   const [searchParams, setSearchParams] = useSearchParams();
   const planetName = searchParams.get('planet');
   const [isQuizActive, setIsQuizActive] = useState(false);
+  
+  const { user } = useUser();
+  const playerId = user?.id || "0";
 
   const { connected, stop, ws } = useSimulationSocket("ws://localhost:5001/simulations/socket");
 
-  usePlayerInput(connected ? ws : null, "0", !planetName);
+  usePlayerInput(connected ? ws : null, playerId, !planetName);
 
   const handleReturnToSpace = () => {
     if (ws && ws.readyState === WebSocket.OPEN && isQuizActive) {
-       ws.send(JSON.stringify({ Type: "leave_quiz", PlayerId: "0" }));
+       ws.send(JSON.stringify({ Type: "leave_quiz", PlayerId: playerId }));
     }
     setSearchParams({});
     setIsQuizActive(false);
@@ -28,14 +32,14 @@ export default function Training() {
 
   const handleStartQuiz = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ Type: "enter_quiz", PlayerId: "0", Planet: planetName }));
+        ws.send(JSON.stringify({ Type: "enter_quiz", PlayerId: playerId, Planet: planetName }));
     }
     setIsQuizActive(true);
   };
 
   const handleCloseQuiz = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ Type: "leave_quiz", PlayerId: "0" }));
+        ws.send(JSON.stringify({ Type: "leave_quiz", PlayerId: playerId }));
     }
     setIsQuizActive(false);
   };
@@ -47,7 +51,6 @@ export default function Training() {
           <Planet3DView planetName={planetName} />
         </div>
 
-        {/* Przycisk przesunięty na dół (bottom-5) */}
         <button
           onClick={handleReturnToSpace}
           className="btn-primary fixed bottom-5 right-5 z-[9999]"

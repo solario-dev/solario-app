@@ -5,10 +5,7 @@ using System.Collections.Generic;
 
 public class Player
 {
-    // =============================
-    // IDENTITY & TRANSFORM
-    // =============================
-    public int Id { get; private set; }
+    public string Id { get; private set; }
     public float PosX { get; private set; }
     public float PosY { get; private set; }
     public float PosZ { get; private set; }
@@ -17,9 +14,6 @@ public class Player
     public float DistanceTraveled { get; private set; }
     public string Skin { get; private set; }
 
-    // =============================
-    // GAME STATE
-    // =============================
     public string? Orbit { get; private set; } = null;
     public PlayerState State { get; private set; } = PlayerState.Exploration;
 
@@ -30,28 +24,17 @@ public class Player
     public IReadOnlyCollection<string> VisitedPlanets => _visitedPlanets;
     private readonly HashSet<string> _visitedPlanets = new();
 
-    // =============================
-    // MOVEMENT FLAGS (EXPLORATION)
-    // =============================
     private bool _moveForward = false;
     private bool _moveBackward = false;
-
     private bool _turnLeft = false;
     private bool _turnRight = false;
-
     private bool _turbo = false;
 
-    // =============================
-    // ORBIT MOVEMENT (QUIZ)
-    // =============================
     private float _orbitDeltaX = 0f;
     private float _orbitDeltaZ = 0f;
 
-    // =============================
-    // CONSTRUCTOR
-    // =============================
     public Player(
-        int id,
+        string id,
         float x,
         float y,
         float z,
@@ -70,7 +53,6 @@ public class Player
         Skin = skin;
     }
 
-
     public void Turn(float newRotation)
     {
         Rotation = newRotation % 360f;
@@ -83,9 +65,6 @@ public class Player
     public void SetTurnRight(bool turn) => _turnRight = turn;
     public void SetTurbo(bool turbo) => _turbo = turbo;
 
-    // =============================
-    // ORBIT MOVEMENT – FROM SIMULATION
-    // =============================
     public void ApplyOrbitMovement(float deltaX, float deltaZ)
     {
         if (State == PlayerState.Quiz)
@@ -95,9 +74,6 @@ public class Player
         }
     }
 
-    // =============================
-    // GAME STATE MANAGEMENT
-    // =============================
     public void EnterOrbit(string planetName)
     {
         Orbit = planetName;
@@ -116,9 +92,6 @@ public class Player
         State = PlayerState.Disconnected;
     }
 
-    // =============================
-    // QUIZ / SCORE
-    // =============================
     public void RegisterAnswer(bool isCorrect, int pointsEarned)
     {
         QuestionsAnswered++;
@@ -130,9 +103,6 @@ public class Player
         }
     }
 
-    // =============================
-    // PERFORM MOVEMENT (ONE TICK)
-    // =============================
     public void PerformMovement(float dt, float turnRate = 360f)
     {
         if (State == PlayerState.Disconnected)

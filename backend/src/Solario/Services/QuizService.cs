@@ -17,11 +17,8 @@ public class QuizService
         _simulation = simulation;
     }
 
-    // =============================
-    // GET QUESTIONS FOR QUIZ
-    // =============================
     public async Task<List<QuestionDto>> GetQuestionsAsync(
-        int playerId,
+        string playerId,
         string planet,
         int count)
     {
@@ -38,7 +35,6 @@ public class QuizService
         {
             Id = q.Id,
             Text = q.Text,
-            // SHUFFLE ANSWERS HERE
             Answers = q.Answers
                 .OrderBy(x => rng.Next()) 
                 .Select(a => new AnswerDto
@@ -49,22 +45,16 @@ public class QuizService
         }).ToList();
     }
 
-    // =============================
-    // CHECK ANSWER
-    // =============================
     public async Task<bool> CheckAnswerAsync(
-        int playerId,
+        string playerId,
         Guid questionId,
         Guid answerId,
         double remainingRatio)
     {
-        // Logowanie dla debugowania
         Console.WriteLine($"Checking answer. Q: {questionId}, A: {answerId}");
 
         var player = _simulation.GetPlayer(playerId);
         if (player == null || player.State != PlayerState.Quiz)
-            // throw new InvalidOperationException("Player is not in quiz state.");
-            // Tymczasowo pozwólmy na to, bo w training mode ID 0 może nie mieć poprawnego stanu
             Console.WriteLine("Warning: Player not in Quiz state (Training mode?)");
 
         var correctId =
@@ -88,7 +78,7 @@ public class QuizService
         return isCorrect;
     }
 
-    public async Task HandleTimeoutAsync(int playerId, Guid questionId)
+    public async Task HandleTimeoutAsync(string playerId, Guid questionId)
     {
         var player = _simulation.GetPlayer(playerId);
         if (player == null || player.State != PlayerState.Quiz)

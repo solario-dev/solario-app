@@ -15,7 +15,7 @@ using Solario.Websockets;
 using System.Net.WebSockets;
 using Serilog;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization; // Dodane
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,7 +55,6 @@ builder.Services.AddScoped<ShopRepository>();
 builder.Services.AddScoped<ShopService>();
 builder.Services.AddScoped<DbSeeder>();
 
-// FIX: Dodano obsługę cykli w JSON (ReferenceHandler.IgnoreCycles)
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -172,7 +171,6 @@ simulation.InitPlanet("Saturn", 14816f, 10759.22f, 10.7f, 1.164f);
 simulation.InitPlanet("Uranus", 29304f, 30687.15f, 17.2f, 0.507f);
 simulation.InitPlanet("Neptune", 45530f, 60190.03f, 16.1f, 0.492f);
 
-simulation.InitPlayer(0, 0, 0, 0, 0, 1);
 
 simulation.Start();
 
