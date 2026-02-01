@@ -8,7 +8,8 @@ type KeysState = {
   turbo: boolean;
 };
 
-export function usePlayerInput(ws: WebSocket | null, playerId: string) {
+// Dodano parametr enabled (domyślnie true)
+export function usePlayerInput(ws: WebSocket | null, playerId: string, enabled: boolean = true) {
   const keys = useRef<KeysState>({
     forward: false,
     backward: false,
@@ -19,7 +20,8 @@ export function usePlayerInput(ws: WebSocket | null, playerId: string) {
   const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!ws) return;
+    // Jeśli wyłączone lub brak WS, nie rób nic
+    if (!ws || !enabled) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key.toLowerCase()) {
@@ -87,12 +89,12 @@ export function usePlayerInput(ws: WebSocket | null, playerId: string) {
         };
         ws.send(JSON.stringify(input));
       }
-    }, 33); // wysyłanie co 33ms (~30 FPS) - zsynchronizowane z backendem
+    }, 33);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [ws, playerId]);
+  }, [ws, playerId, enabled]); // Dodano enabled do zależności
 }

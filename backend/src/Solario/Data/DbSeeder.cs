@@ -1,6 +1,7 @@
 using Solario.Models;
 using Solario.Repository;
 using BCrypt.Net;
+using Microsoft.EntityFrameworkCore; // Potrzebne do contextu
 
 namespace Solario.Data
 {
@@ -8,15 +9,18 @@ namespace Solario.Data
     {
         private readonly UserRepository _userRepo;
         private readonly ShopRepository _shopRepo;
+        private readonly PostgresContext _postgresContext; // Dodajemy PostgresContext
 
-        public DbSeeder(UserRepository userRepo, ShopRepository shopRepo)
+        public DbSeeder(UserRepository userRepo, ShopRepository shopRepo, PostgresContext postgresContext)
         {
             _userRepo = userRepo;
             _shopRepo = shopRepo;
+            _postgresContext = postgresContext;
         }
 
         public async Task SeedAsync()
         {
+            // --- MONGO SEED (Users & Shop) ---
             var adminEmail = "admin@solario.com";
             var existingAdmin = await _userRepo.GetByEmailAsync(adminEmail);
 
@@ -85,11 +89,51 @@ namespace Solario.Data
             {
                 if (!existingItems.Any(i => i.Name == item.Name))
                 {
-                    // Ustawiamy ID 'falcon', żeby łatwo wykryć ten model na froncie
                     if (item.Type == "skin") item.Id = "falcon"; 
-                    
                     await _shopRepo.CreateAsync(item);
                 }
+            }
+
+            // --- POSTGRES SEED (Questions) ---
+            // Upewnij się, że baza jest utworzona
+            await _postgresContext.Database.EnsureCreatedAsync();
+
+            if (!await _postgresContext.Questions.AnyAsync())
+            {
+                var marsQuestion = new Question
+                {
+                    Id = Guid.NewGuid(),
+                    PlanetName = "mars",
+                    Text = "What creates the reddish color of Mars?"
+                };
+                var marsAnswers = new List<Answer>
+                {
+                    new Answer { Id = Guid.NewGuid(), Text = "Iron Oxide (Rust)", QuestionId = marsQuestion.Id },
+                    new Answer { Id = Guid.NewGuid(), Text = "Red Sandstone", QuestionId = marsQuestion.Id },
+                    new Answer { Id = Guid.NewGuid(), Text = "Atmospheric gases", QuestionId = marsQuestion.Id },
+                    new Answer { Id = Guid.NewGuid(), Text = "Volcanic Ash", QuestionId = marsQuestion.Id }
+                };
+                marsQuestion.Answers = marsAnswers;
+                marsQuestion.CorrectAnswerId = marsAnswers[0].Id; // Iron Oxide
+
+                var earthQuestion = new Question
+                {
+                    Id = Guid.NewGuid(),
+                    PlanetName = "earth",
+                    Text = "Which layer of Earth's atmosphere contains the ozone layer?"
+                };
+                var earthAnswers = new List<Answer>
+                {
+                    new Answer { Id = Guid.NewGuid(), Text = "Troposphere", QuestionId = earthQuestion.Id },
+                    new Answer { Id = Guid.NewGuid(), Text = "Stratosphere", QuestionId = earthQuestion.Id },
+                    new Answer { Id = Guid.NewGuid(), Text = "Mesosphere", QuestionId = earthQuestion.Id },
+                    new Answer { Id = Guid.NewGuid(), Text = "Thermosphere", QuestionId = earthQuestion.Id }
+                };
+                earthQuestion.Answers = earthAnswers;
+                earthQuestion.CorrectAnswerId = earthAnswers[1].Id; // Stratosphere
+
+                _postgresContext.Questions.AddRange(marsQuestion, earthQuestion);
+                await _postgresContext.SaveChangesAsync();
             }
         }
     }

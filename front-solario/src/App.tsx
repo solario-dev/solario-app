@@ -9,6 +9,7 @@ import LandingPage from './pages/LandingPage.tsx'
 import Training from './pages/Training.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import RegisterPage from './pages/RegisterPage.tsx'
+import AdminPage from './pages/AdminPage.tsx'
 import { useEffect } from 'react'
 import { getGames } from './api/games.ts'
 import { GameStateProvider } from './context/GameStateContext.tsx'
@@ -43,6 +44,7 @@ export default function App() {
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/shop" element={<Shop />} />
+                        <Route path="/admin" element={<AdminPage />} />
 
                         <Route path="/training" element={<Training />} />
 

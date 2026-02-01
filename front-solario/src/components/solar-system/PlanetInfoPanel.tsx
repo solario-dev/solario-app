@@ -2,9 +2,10 @@ import planetsData from '../../data/planets.json'
 
 interface PlanetInfoPanelProps {
   planetName: string
+  onStartQuiz?: () => void // Dodajemy prop
 }
 
-export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({ planetName }) => {
+export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({ planetName, onStartQuiz }) => {
   const planetInfo = planetsData.celestialBodies.find(p => p.name === planetName)
 
   if (!planetInfo) return null
@@ -28,7 +29,7 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({ planetName }) 
         Use mouse to rotate the planet
       </div>
 
-      <button className='btn-primary mt-6'>Start Quiz</button>
+      <button onClick={onStartQuiz} className='btn-primary mt-6 w-full'>Start Quiz</button>
     </div>
   )
 }

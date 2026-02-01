@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ControlledSolarSystem } from "../components/solar-system/ControlledSolarSystem";
 import { usePlayerInput } from "../hooks/usePlayerInput";
 import { useSimulationSocket } from "../hooks/useSimulationSocket";
@@ -6,38 +7,67 @@ import { Minimap } from "../components/solar-system/Minimap";
 import { Planet3DView } from "../components/solar-system/Planet3DView";
 import { PlanetInfoPanel } from "../components/solar-system/PlanetInfoPanel";
 import { useSearchParams } from "react-router-dom";
+import QuizWindow from "../components/quiz/QuizWindow";
 
 export default function Training() {
   const [searchParams, setSearchParams] = useSearchParams();
   const planetName = searchParams.get('planet');
+  const [isQuizActive, setIsQuizActive] = useState(false);
 
   const { connected, stop, ws } = useSimulationSocket("ws://localhost:5001/simulations/socket");
 
-  // PlayerInput tylko gdy WebSocket jest gotowy
-  usePlayerInput(connected ? ws : null, "0");
+  usePlayerInput(connected ? ws : null, "0", !planetName);
 
   const handleReturnToSpace = () => {
+    if (ws && ws.readyState === WebSocket.OPEN && isQuizActive) {
+       ws.send(JSON.stringify({ Type: "leave_quiz", PlayerId: "0" }));
+    }
     setSearchParams({});
+    setIsQuizActive(false);
+  };
+
+  const handleStartQuiz = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ Type: "enter_quiz", PlayerId: "0", Planet: planetName }));
+    }
+    setIsQuizActive(true);
+  };
+
+  const handleCloseQuiz = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ Type: "leave_quiz", PlayerId: "0" }));
+    }
+    setIsQuizActive(false);
   };
 
   if (planetName) {
     return (
       <main className="min-h-screen relative bg-black text-white font-geist">
+        <div className="w-full h-screen absolute top-0 left-0 z-0">
+          <Planet3DView planetName={planetName} />
+        </div>
+
+        {/* Przycisk przesunięty na dół (bottom-5) */}
         <button
           onClick={handleReturnToSpace}
-          className="btn-primary absolute top-5 right-5 z-[101]"
+          className="btn-primary fixed bottom-5 right-5 z-[9999]"
         >
           Return to Space
         </button>
 
-        <div className="absolute top-5 left-5 z-[101]">
-          <PlanetInfoPanel planetName={planetName} />
-        </div>
+        {isQuizActive && (
+            <QuizWindow 
+                planetName={planetName} 
+                onClose={handleCloseQuiz} 
+                onExitOrbit={handleReturnToSpace} 
+            />
+        )}
 
-        <Minimap/>
-
-        <div className="w-full h-screen">
-          <Planet3DView planetName={planetName} />
+        <div className="fixed top-5 left-5 z-[50]">
+          <PlanetInfoPanel 
+            planetName={planetName} 
+            onStartQuiz={handleStartQuiz} 
+          />
         </div>
       </main>
     );
@@ -52,12 +82,10 @@ export default function Training() {
       "
     >
       <section className="h-screen">
-
-
         <div className="absolute top-4 left-4 z-10 flex flex-col space-y-4 bg-black/30 p-4 rounded-md backdrop-blur-md border border-[var(--color-primary)]/20 shadow-[0_0_20px_rgba(0,255,240,0.15)]">
           <div>{connected ? "Connected" : "Disconnected"}</div>
           <div className="space-x-2">
-            <button onClick={stop} className="border-1 rounded-sm p-2  text-red-600">Disconnect</button>
+            <button onClick={stop} className="border-1 rounded-sm p-2 text-red-600">Disconnect</button>
             <button onClick={() => window.location.reload()} className="border-1 rounded-sm p-2">Reconnect</button>
           </div>
           <GameHud/>

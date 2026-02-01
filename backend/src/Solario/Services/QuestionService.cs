@@ -17,9 +17,6 @@ namespace Solario.Services
             _simulation = simulation;
         }
 
-        // =====================================
-        // QUIZ: sprawdzenie odpowiedzi + punkty
-        // =====================================
         public async Task<bool> CheckAnswerAsync(
             int playerId,
             Guid questionId,
@@ -27,8 +24,12 @@ namespace Solario.Services
             double remainingRatio)
         {
             var player = _simulation.GetPlayer(playerId);
+            
+            // Zmieniono throw na warning, aby działało płynniej w Training Mode
             if (player == null || player.State != PlayerState.Quiz)
-                throw new InvalidOperationException("Player is not in quiz state.");
+            {
+                Console.WriteLine($"[Warning] Player {playerId} CheckAnswer: State is {player?.State}, expected Quiz.");
+            }
 
             var correctAnswerId =
                 await _repo.GetCorrectAnswerIdAsync(questionId);
@@ -45,29 +46,25 @@ namespace Solario.Services
                 points = 100 + (int)(1000 * remainingRatio);
             }
 
-            player.RegisterAnswer(isCorrect, points);
+            if (player != null)
+            {
+                player.RegisterAnswer(isCorrect, points);
+            }
+            
             return isCorrect;
         }
 
-        // =====================================
-        // QUIZ: timeout
-        // =====================================
         public async Task HandleTimeoutAsync(
             int playerId,
             Guid questionId)
         {
             var player = _simulation.GetPlayer(playerId);
-            if (player == null || player.State != PlayerState.Quiz)
-                return;
+            if (player == null) return;
 
-            // 0 pkt, ale liczymy pytanie
             player.RegisterAnswer(false, 0);
             await Task.CompletedTask;
         }
 
-        // =====================================
-        // ADMIN / CONTENT: tworzenie pytania
-        // =====================================
         public async Task<Question> CreateQuestionAsync(
             CreateQuestionRequest request)
         {
@@ -78,8 +75,11 @@ namespace Solario.Services
                 request.CorrectAnswerIndex >= request.Answers.Count)
                 throw new ArgumentException("CorrectAnswerIndex is invalid.");
 
+            var questionId = Guid.NewGuid();
+
             var question = new Question
             {
+                Id = questionId,
                 PlanetName = request.PlanetName.Trim().ToLowerInvariant(),
                 Text = request.Text
             };
@@ -87,7 +87,9 @@ namespace Solario.Services
             var answers = request.Answers
                 .Select(a => new Answer
                 {
+                    Id = Guid.NewGuid(),
                     Text = a.Text,
+                    QuestionId = questionId,
                     Question = question
                 })
                 .ToList();

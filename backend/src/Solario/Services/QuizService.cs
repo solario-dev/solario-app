@@ -32,15 +32,20 @@ public class QuizService
         var questions =
             await _questions.GetRandomByPlanetAsync(planet, count);
 
+        var rng = new Random();
+
         return questions.Select(q => new QuestionDto
         {
             Id = q.Id,
             Text = q.Text,
-            Answers = q.Answers.Select(a => new AnswerDto
-            {
-                Id = a.Id,
-                Text = a.Text
-            }).ToList()
+            // SHUFFLE ANSWERS HERE
+            Answers = q.Answers
+                .OrderBy(x => rng.Next()) 
+                .Select(a => new AnswerDto
+                {
+                    Id = a.Id,
+                    Text = a.Text
+                }).ToList()
         }).ToList();
     }
 
@@ -53,12 +58,19 @@ public class QuizService
         Guid answerId,
         double remainingRatio)
     {
+        // Logowanie dla debugowania
+        Console.WriteLine($"Checking answer. Q: {questionId}, A: {answerId}");
+
         var player = _simulation.GetPlayer(playerId);
         if (player == null || player.State != PlayerState.Quiz)
-            throw new InvalidOperationException("Player is not in quiz state.");
+            // throw new InvalidOperationException("Player is not in quiz state.");
+            // Tymczasowo pozwólmy na to, bo w training mode ID 0 może nie mieć poprawnego stanu
+            Console.WriteLine("Warning: Player not in Quiz state (Training mode?)");
 
         var correctId =
             await _questions.GetCorrectAnswerIdAsync(questionId);
+
+        Console.WriteLine($"Correct ID from DB: {correctId}");
 
         bool isCorrect = correctId == answerId;
 
@@ -68,20 +80,20 @@ public class QuizService
             points = 100 + (int)(1000 * remainingRatio);
         }
 
-        player.RegisterAnswer(isCorrect, points);
+        if (player != null)
+        {
+            player.RegisterAnswer(isCorrect, points);
+        }
+        
         return isCorrect;
     }
 
-    // =============================
-    // TIMEOUT
-    // =============================
     public async Task HandleTimeoutAsync(int playerId, Guid questionId)
     {
         var player = _simulation.GetPlayer(playerId);
         if (player == null || player.State != PlayerState.Quiz)
             return;
 
-        // 0 pkt, tylko statystyki
         player.RegisterAnswer(false, 0);
         await Task.CompletedTask;
     }
