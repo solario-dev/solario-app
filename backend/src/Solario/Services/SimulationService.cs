@@ -6,6 +6,7 @@ using Solario.Models;
 using Microsoft.Extensions.Logging;
 using Solario.Repository;
 using Microsoft.Extensions.DependencyInjection;
+using Solario.Services;
 
 public class SimulationService
 {
@@ -268,6 +269,41 @@ public class SimulationService
                     player.PerformMovement(_dt * SimSpeed);
             }
             Thread.Sleep((int)(_dt * 1000));
+        }
+    }
+    public async Task FlushPlayerStatsAsync(Player player, string userId)
+    {
+        var delta = new UserStatsDeltaDto
+        {
+            QuestionsAnsweredDelta = player.QuestionsAnswered,
+            CorrectAnswersDelta = player.CorrectAnswers,
+            TotalScoreDelta = player.Points,
+            DistanceTraveledDelta = player.DistanceTraveled,
+            NewVisitedPlanets = player.VisitedPlanets.Length()
+        };
+
+    await _userStats.ApplyDeltaAsync(userId, delta);
+    }
+
+    public Player? GetPlayer(int playerId)
+    {
+        lock (_lock)
+        {
+            _players.TryGetValue(playerId, out var player);
+            return player;
+        }
+    }
+
+    public Player? RemovePlayerAndReturn(int playerId)
+    {
+        lock (_lock)
+        {
+            if (_players.TryGetValue(playerId, out var player))
+            {
+                _players.Remove(playerId);
+                return player;
+            }
+        return null;
         }
     }
 }
