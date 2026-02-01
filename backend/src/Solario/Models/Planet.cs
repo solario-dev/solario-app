@@ -15,13 +15,21 @@ public class Planet
 
     public float PosX { get; private set; }
     public float PosZ { get; private set; }
-    // public float PosY { get; private set; }
+
+    private float _previousPosX;
+    private float _previousPosZ;
 
     private float _orbitalAngle;
     private float _rotationAngle;
     private readonly float _radius;
 
-    public Planet(string name, float orbitDiameter, float yearLength, float dayLength, float planetDiameter, bool claimed = false)
+    public Planet(
+        string name,
+        float orbitDiameter,
+        float yearLength,
+        float dayLength,
+        float planetDiameter,
+        bool claimed = false)
     {
         if (yearLength == 0f) throw new ArgumentException("yearLength nie może być 0.");
         if (dayLength == 0f) throw new ArgumentException("dayLength nie może być 0.");
@@ -38,11 +46,20 @@ public class Planet
         _rotationAngle = (float)(_rng.NextDouble() * Math.PI * 2.0);
 
         UpdatePositionFromAngle();
+
+        _previousPosX = PosX;
+        _previousPosZ = PosZ;
     }
 
+    // =============================
+    // SIMULATION TICK
+    // =============================
     public void Move(float dt)
     {
         if (dt <= 0f) return;
+
+        _previousPosX = PosX;
+        _previousPosZ = PosZ;
 
         float orbitalAngularSpeed = (float)(2.0 * Math.PI) / YearLength;
         float rotationAngularSpeed = (float)(2.0 * Math.PI) / DayLength;
@@ -56,11 +73,28 @@ public class Planet
         UpdatePositionFromAngle();
     }
 
+    // =============================
+    // ORBIT DELTA (KEY METHOD)
+    // =============================
+    public (float deltaX, float deltaZ) GetDeltaMovement()
+    {
+        float dx = PosX - _previousPosX;
+        float dz = PosZ - _previousPosZ;
+
+        return (dx, dz);
+    }
+
+    // =============================
+    // STATE
+    // =============================
     public void Claim()
     {
         Claimed = true;
     }
 
+    // =============================
+    // INTERNALS
+    // =============================
     private static float NormalizeAngle(float a)
     {
         float twoPi = (float)(2.0 * Math.PI);

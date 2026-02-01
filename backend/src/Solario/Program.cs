@@ -14,6 +14,8 @@ using Solario.Services;
 using Solario.Websockets;
 using System.Net.WebSockets;
 using Serilog;
+using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +55,17 @@ builder.Services.AddScoped<ShopRepository>();
 builder.Services.AddScoped<ShopService>();
 builder.Services.AddScoped<DbSeeder>();
 
+builder.Services.AddControllers();
+
+builder.Services.AddDbContext<PostgresContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Postgres")
+    )
+);
+
+builder.Services.AddScoped<QuestionRepository>();
+builder.Services.AddScoped<QuestionService>();
+
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "solario";
 var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "solario_frontend";
@@ -90,6 +103,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<SimulationService>();
 builder.Services.AddSingleton<SimulationWebSocketHandler>();
+
+builder.Services.AddDbContext<PostgresContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
 
 var app = builder.Build();
 
