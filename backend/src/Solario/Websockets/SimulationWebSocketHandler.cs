@@ -11,11 +11,13 @@ namespace Solario.Websockets
     {
         private readonly SimulationService _simulationService;
         private readonly ILogger<SimulationWebSocketHandler> _logger;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         public SimulationWebSocketHandler(SimulationService simulationService, ILogger<SimulationWebSocketHandler> logger)
         {
             _simulationService = simulationService;
             _logger = logger;
+            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
         public async Task HandleAsync(WebSocket webSocket)
@@ -44,30 +46,46 @@ namespace Solario.Websockets
 
                             var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
-                            JsonDocument doc = JsonDocument.Parse(msg);
+                            // Parsowanie wstępne, żeby sprawdzić typ komunikatu
+                            JsonDocument doc;
+                            try
+                            {
+                                doc = JsonDocument.Parse(msg);
+                            }
+                            catch (JsonException)
+                            {
+                                _logger.LogWarning("Received invalid JSON");
+                                continue; // Ignoruj błędne wiadomości, nie rozłączaj
+                            }
+
                             var root = doc.RootElement;
 
-                            if (!root.TryGetProperty("type", out var typeProp))
-                            return;
+                            // FIX: Sprawdź "Type" (PascalCase - frontend) oraz "type" (camelCase)
+                            if (!root.TryGetProperty("Type", out var typeProp) && 
+                                !root.TryGetProperty("type", out typeProp))
+                            {
+                                continue; // Nieznany format - ignoruj
+                            }
 
                             var type = typeProp.GetString();
 
                             if (type == "input")
                             {
-                                var input = JsonSerializer.Deserialize<PlayerInput>(msg);
+                                var input = JsonSerializer.Deserialize<PlayerInput>(msg, _jsonOptions);
 
                                 if (input != null && int.TryParse(input.PlayerId, out var pid))
                                 {
-                                    // Tutaj normalnie pobralibyśmy skin gracza z bazy danych
-                                    // Na ten moment inicjujemy z 'default' lub tym co już jest w symulacji
-                                    _simulationService.InitPlayer(pid, 0, 0, 0, 0, 1, "default"); 
+                                    if (selfPlayerId != pid)
+                                    {
+                                        _simulationService.InitPlayer(pid, 0, 0, 0, 0, 1, "default"); 
+                                    }
                                     selfPlayerId = pid;
                                     _simulationService.ApplyPlayerInput(pid, input);
                                 }
                             }
                             else if (type == "enter_quiz")
                             {
-                                var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg);
+                                var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg, _jsonOptions);
 
                                 if (cmd != null &&
                                     int.TryParse(cmd.PlayerId, out var pid) &&
@@ -80,7 +98,7 @@ namespace Solario.Websockets
                             }
                             else if (type == "leave_quiz")
                             {
-                                var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg);
+                                var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg, _jsonOptions);
 
                                 if (cmd != null && int.TryParse(cmd.PlayerId, out var pid))
                                 {
@@ -93,6 +111,11 @@ namespace Solario.Websockets
                         }
                         catch (OperationCanceledException) { break; }
                         catch (WebSocketException) { cts.Cancel(); break; }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error processing WebSocket message");
+                            // Nie przerywaj pętli przy błędzie aplikacji
+                        }
                     }
                 }, cts.Token);
 
