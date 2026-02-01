@@ -57,6 +57,7 @@ builder.Services.AddScoped<DbSeeder>();
 
 builder.Services.AddControllers();
 
+// Poprawna konfiguracja Postgresa (zostawiamy)
 builder.Services.AddDbContext<PostgresContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Postgres")
@@ -104,9 +105,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<SimulationService>();
 builder.Services.AddSingleton<SimulationWebSocketHandler>();
 
-builder.Services.AddDbContext<PostgresContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
-
+// USUNIĘTO: Błędna, zduplikowana linia z ConnectionString("Default") została usunięta stąd.
 
 var app = builder.Build();
 
