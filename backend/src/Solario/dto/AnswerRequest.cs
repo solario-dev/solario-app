@@ -1,4 +1,4 @@
-namespace Solario.Models
+namespace Solario.Dto
 {
     public class AnswerRequest
     {

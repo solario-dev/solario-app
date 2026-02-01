@@ -1,6 +1,6 @@
 services:
   mongo:
-    image: mongo:latest
+    image: mongo:7
     container_name: solario-mongo
     ports:
       - "27017:27017"
@@ -8,6 +8,18 @@ services:
       MONGO_INITDB_DATABASE: SolarioDb
     volumes:
       - mongo-data:/data/db
+
+  postgres:
+    image: postgres:16
+    container_name: solario-postgres
+    environment:
+      POSTGRES_DB: solario
+      POSTGRES_USER: solario
+      POSTGRES_PASSWORD: solario
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
 
   backend:
     build:
@@ -17,14 +29,22 @@ services:
     ports:
       - "5001:5000"
     environment:
+      # Mongo
       - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
       - MONGODB_DATABASE=SolarioDb
+
+      # Postgres (EF Core)
+      - ConnectionStrings__Postgres=Host=postgres;Port=5432;Database=solario;Username=solario;Password=solario
+
+      # ASP.NET
       - ASPNETCORE_ENVIRONMENT=Development
       - JWT_KEY=super_dlugi_sekretny_klucz_ktory_ma_32_znaki_!
       - JWT_ISSUER=solario
       - JWT_AUDIENCE=solario_frontend
     depends_on:
       - mongo
+      - postgres
 
 volumes:
   mongo-data:
+  postgres-data:

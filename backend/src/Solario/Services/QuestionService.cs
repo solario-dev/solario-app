@@ -1,29 +1,75 @@
 using Solario.Repository;
 using Solario.Models;
+using Solario.Abstractions;
 
 namespace Solario.Services
 {
     public class QuestionService
     {
         private readonly QuestionRepository _repo;
+        private readonly SimulationService _simulation;
 
-        public QuestionService(QuestionRepository repo)
+        public QuestionService(
+            QuestionRepository repo,
+            SimulationService simulation)
         {
             _repo = repo;
+            _simulation = simulation;
         }
 
-        public async Task<bool?> CheckAnswerAsync(Guid questionId, Guid answerId)
+        // =====================================
+        // QUIZ: sprawdzenie odpowiedzi + punkty
+        // =====================================
+        public async Task<bool> CheckAnswerAsync(
+            int playerId,
+            Guid questionId,
+            Guid answerId,
+            double remainingRatio)
         {
-            var correctAnswerId = await _repo.GetCorrectAnswerIdAsync(questionId);
+            var player = _simulation.GetPlayer(playerId);
+            if (player == null || player.State != PlayerState.Quiz)
+                throw new InvalidOperationException("Player is not in quiz state.");
+
+            var correctAnswerId =
+                await _repo.GetCorrectAnswerIdAsync(questionId);
 
             if (correctAnswerId == null)
-                return null;
+                throw new InvalidOperationException("Question not found.");
 
-            return correctAnswerId == answerId;
+            bool isCorrect = correctAnswerId == answerId;
+
+            int points = 0;
+            if (isCorrect)
+            {
+                remainingRatio = Math.Clamp(remainingRatio, 0.0, 1.0);
+                points = 100 + (int)(1000 * remainingRatio);
+            }
+
+            player.RegisterAnswer(isCorrect, points);
+            return isCorrect;
         }
 
-        // === NOWE: tworzenie pytania z odpowiedziami ===
-        public async Task<Question> CreateQuestionAsync(CreateQuestionRequest request)
+        // =====================================
+        // QUIZ: timeout
+        // =====================================
+        public async Task HandleTimeoutAsync(
+            int playerId,
+            Guid questionId)
+        {
+            var player = _simulation.GetPlayer(playerId);
+            if (player == null || player.State != PlayerState.Quiz)
+                return;
+
+            // 0 pkt, ale liczymy pytanie
+            player.RegisterAnswer(false, 0);
+            await Task.CompletedTask;
+        }
+
+        // =====================================
+        // ADMIN / CONTENT: tworzenie pytania
+        // =====================================
+        public async Task<Question> CreateQuestionAsync(
+            CreateQuestionRequest request)
         {
             if (request.Answers.Count < 2)
                 throw new ArgumentException("Question must have at least 2 answers.");
@@ -50,7 +96,6 @@ namespace Solario.Services
             question.CorrectAnswerId = answers[request.CorrectAnswerIndex].Id;
 
             await _repo.AddAsync(question);
-
             return question;
         }
     }
