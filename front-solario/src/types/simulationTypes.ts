@@ -4,6 +4,7 @@ export type PlayerState = {
   y: number;
   z: number;
   rot: number;
+  skin?: string;
 };
 
 export type BodyState = {

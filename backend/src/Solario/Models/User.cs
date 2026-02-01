@@ -38,5 +38,8 @@ namespace Solario.Models
         
         [BsonElement("inventory")]
         public List<string> Inventory { get; set; } = new List<string>();
+
+        [BsonElement("equippedSkin")]
+        public string EquippedSkin { get; set; } = "default";
     }
 }

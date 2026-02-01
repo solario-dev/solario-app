@@ -7,6 +7,7 @@ export default function Shop() {
   const { user, login, token } = useUser();
   const [items, setItems] = useState<ShopItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'passport' | 'skin'>('passport');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -47,6 +48,8 @@ export default function Shop() {
     }
   };
 
+  const filteredItems = items.filter(item => item.type === activeTab);
+
   if (loading) {
     return (
       <main className="min-h-screen bg-[var(--color-bg-main)] flex items-center justify-center pt-20">
@@ -61,7 +64,7 @@ export default function Shop() {
     <main className="min-h-screen bg-[var(--color-bg-main)] text-[var(--color-primary)] font-geist pt-24 px-8 pb-10">
       <div className="max-w-7xl mx-auto">
         
-        <header className="flex justify-between items-end mb-12 border-b border-[var(--color-primary)]/30 pb-6">
+        <header className="flex justify-between items-end mb-8 border-b border-[var(--color-primary)]/30 pb-6">
           <div>
             <h1 className="text-4xl font-orbit text-glow mb-2">GALACTIC SUPPLY</h1>
             <p className="text-[var(--color-primary)]/60 text-sm tracking-widest">
@@ -77,6 +80,22 @@ export default function Shop() {
           </div>
         </header>
 
+        {/* --- TABS --- */}
+        <div className="flex gap-4 mb-8">
+            <button 
+                onClick={() => setActiveTab('passport')}
+                className={`px-6 py-2 uppercase tracking-widest text-sm font-bold border-b-2 transition-all ${activeTab === 'passport' ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-transparent text-[var(--color-primary)]/40 hover:text-[var(--color-primary)]/70'}`}
+            >
+                Passports
+            </button>
+            <button 
+                onClick={() => setActiveTab('skin')}
+                className={`px-6 py-2 uppercase tracking-widest text-sm font-bold border-b-2 transition-all ${activeTab === 'skin' ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-transparent text-[var(--color-primary)]/40 hover:text-[var(--color-primary)]/70'}`}
+            >
+                Ships & Skins
+            </button>
+        </div>
+
         {message && (
           <div className={`fixed top-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded border backdrop-blur-md z-50 transition-all ${
             message.type === 'success' 
@@ -88,7 +107,7 @@ export default function Shop() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {items.map((item) => {
+          {filteredItems.map((item) => {
             const isOwned = user?.inventory.includes(item.id);
             const canAfford = (user?.credits || 0) >= item.price;
 
@@ -106,7 +125,7 @@ export default function Shop() {
 
                 <div className="h-40 bg-black/40 rounded border border-[var(--color-primary)]/20 mb-6 flex items-center justify-center relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-primary)_0%,_transparent_70%)] opacity-10 group-hover:opacity-20 transition-opacity"></div>
-                  <span className="text-4xl">📦</span>
+                  <span className="text-4xl">🚀</span>
                 </div>
 
                 <h3 className="text-xl font-bold font-orbit mb-2 truncate" title={item.name}>{item.name}</h3>
@@ -118,7 +137,7 @@ export default function Shop() {
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-xs text-[var(--color-primary)]/50">COST</span>
                     <span className={`text-xl font-bold font-orbit ${canAfford || isOwned ? 'text-[var(--color-primary)]' : 'text-red-400'}`}>
-                      {item.price} CR
+                      {item.price.toLocaleString()} CR
                     </span>
                   </div>
 
@@ -135,7 +154,7 @@ export default function Shop() {
                       }
                     `}
                   >
-                    {isOwned ? "INSTALLED" : canAfford ? "PURCHASE" : "INSUFFICIENT FUNDS"}
+                    {isOwned ? "OWNED" : canAfford ? "PURCHASE" : "INSUFFICIENT FUNDS"}
                   </button>
                 </div>
               </div>
@@ -143,7 +162,7 @@ export default function Shop() {
           })}
         </div>
 
-        {items.length === 0 && (
+        {filteredItems.length === 0 && (
           <div className="text-center py-20 text-[var(--color-primary)]/40">
             NO SHIPMENTS DETECTED IN THIS SECTOR.
           </div>

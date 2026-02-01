@@ -6,24 +6,20 @@ public class Player
 {
     public int Id { get; private set; }
     public float PosX { get; private set; }
-    public float PosY { get; private set; } // wysokość stała
+    public float PosY { get; private set; }
     public float PosZ { get; private set; }
-    public float Rotation { get; private set; } // stopnie, obrót wokół Y
+    public float Rotation { get; private set; }
     public float Speed { get; private set; }
     public float DistanceTraveled { get; private set; }
+    public string Skin { get; private set; }
 
-    // Flagi ruchu (resetowane po użyciu)
     private bool _moveForward = false;
     private bool _moveBackward = false;
-
-    // Flagi skrętu (ciągłe - nie resetowane)
     private bool _turnLeft = false;
     private bool _turnRight = false;
-
-    // Flaga turbo (ciągła - nie resetowana)
     private bool _turbo = false;
 
-    public Player(int id, float x, float y, float z, float rotation, float speed)
+    public Player(int id, float x, float y, float z, float rotation, float speed, string skin = "default")
     {
         Id = id;
         PosX = x;
@@ -32,32 +28,23 @@ public class Player
         Rotation = rotation;
         Speed = speed;
         DistanceTraveled = 0f;
+        Skin = skin;
     }
 
-    // ----------------------------
-    // ROTATION
-    // ----------------------------
     public void Turn(float newRotation)
     {
         Rotation = newRotation % 360f;
         if (Rotation < 0) Rotation += 360f;
     }
 
-    // ----------------------------
-    // FLAGI RUCHU I SKRĘTU
-    // ----------------------------
     public void SetMoveForward(bool move) => _moveForward = move;
     public void SetMoveBackward(bool move) => _moveBackward = move;
     public void SetTurnLeft(bool turn) => _turnLeft = turn;
     public void SetTurnRight(bool turn) => _turnRight = turn;
     public void SetTurbo(bool turbo) => _turbo = turbo;
 
-    // ----------------------------
-    // PERFORM MOVEMENT - jeden tick
-    // ----------------------------
     public void PerformMovement(float dt, float turnRate = 360f)
     {
-        // Obsługa skrętu (ciągłe - działa w każdej klatce gdy flaga aktywna)
         if (_turnLeft)
         {
             float turnAngle = turnRate * dt;
@@ -72,19 +59,18 @@ public class Player
             if (Rotation < 0) Rotation += 360f;
         }
 
-        // Obsługa ruchu
         float rad = Rotation * (float)Math.PI / 180f;
-        float speedMultiplier = _turbo ? 5.0f : 1.0f; // turbo x5 prędkości
+        float speedMultiplier = _turbo ? 5.0f : 1.0f;
         float effectiveSpeed = Speed * speedMultiplier;
-        float dx = (float)Math.Sin(rad) * effectiveSpeed; // forward X
-        float dz = (float)Math.Cos(rad) * effectiveSpeed; // forward Z
+        float dx = (float)Math.Sin(rad) * effectiveSpeed;
+        float dz = (float)Math.Cos(rad) * effectiveSpeed;
 
         if (_moveForward)
         {
             PosX += dx;
             PosZ += dz;
             DistanceTraveled += effectiveSpeed;
-            _moveForward = false; // reset flagi
+            _moveForward = false;
         }
 
         if (_moveBackward)
@@ -92,7 +78,7 @@ public class Player
             PosX -= dx;
             PosZ -= dz;
             DistanceTraveled += effectiveSpeed;
-            _moveBackward = false; // reset flagi
+            _moveBackward = false;
         }
     }
 }

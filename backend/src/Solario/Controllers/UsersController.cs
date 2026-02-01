@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using Solario.Services;
 
 namespace Solario.Controllers
 {
@@ -16,11 +17,13 @@ namespace Solario.Controllers
     {
         private readonly UserRepository _repo;
         private readonly IConfiguration _configuration;
+        private readonly SimulationService _simulationService;
 
-        public UsersController(UserRepository repo, IConfiguration configuration)
+        public UsersController(UserRepository repo, IConfiguration configuration, SimulationService simulationService)
         {
             _repo = repo;
             _configuration = configuration;
+            _simulationService = simulationService;
         }
 
         [HttpGet]
@@ -69,6 +72,26 @@ namespace Solario.Controllers
 
             var token = GenerateJwtToken(user);
             return Ok(new { token, user });
+        }
+
+        [HttpPost("equip/{userId}/{itemId}")]
+        public async Task<IActionResult> EquipSkin(string userId, string itemId)
+        {
+            var user = await _repo.GetByIdAsync(userId);
+            if (user == null) return NotFound("User not found");
+
+            if (itemId != "default" && !user.Inventory.Contains(itemId))
+            {
+                return BadRequest("You do not own this skin.");
+            }
+
+            user.EquippedSkin = itemId;
+            await _repo.UpdateAsync(userId, user);
+
+            // Aktualizacja na żywo dla treningu (ID 0)
+            _simulationService.UpdatePlayerSkin(0, itemId);
+
+            return Ok(new { message = "Skin equipped", equippedSkin = itemId });
         }
 
         [HttpPut("{id}")]
