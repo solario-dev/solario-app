@@ -18,14 +18,13 @@ namespace Solario.Services
         }
 
         public async Task<bool> CheckAnswerAsync(
-            int playerId,
+            string playerId,
             Guid questionId,
             Guid answerId,
             double remainingRatio)
         {
             var player = _simulation.GetPlayer(playerId);
             
-            // Zmieniono throw na warning, aby działało płynniej w Training Mode
             if (player == null || player.State != PlayerState.Quiz)
             {
                 Console.WriteLine($"[Warning] Player {playerId} CheckAnswer: State is {player?.State}, expected Quiz.");
@@ -55,7 +54,7 @@ namespace Solario.Services
         }
 
         public async Task HandleTimeoutAsync(
-            int playerId,
+            string playerId,
             Guid questionId)
         {
             var player = _simulation.GetPlayer(playerId);

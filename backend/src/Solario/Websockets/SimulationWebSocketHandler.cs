@@ -23,7 +23,7 @@ namespace Solario.Websockets
         public async Task HandleAsync(WebSocket webSocket)
         {
             var buffer = new byte[4 * 1024];
-            int selfPlayerId = 0;
+            string selfPlayerId = "0"; 
             var cts = new CancellationTokenSource();
 
             _logger.LogInformation("WebSocket connection established");
@@ -46,7 +46,6 @@ namespace Solario.Websockets
 
                             var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
-                            // Parsowanie wstępne, żeby sprawdzić typ komunikatu
                             JsonDocument doc;
                             try
                             {
@@ -55,16 +54,15 @@ namespace Solario.Websockets
                             catch (JsonException)
                             {
                                 _logger.LogWarning("Received invalid JSON");
-                                continue; // Ignoruj błędne wiadomości, nie rozłączaj
+                                continue;
                             }
 
                             var root = doc.RootElement;
 
-                            // FIX: Sprawdź "Type" (PascalCase - frontend) oraz "type" (camelCase)
                             if (!root.TryGetProperty("Type", out var typeProp) && 
                                 !root.TryGetProperty("type", out typeProp))
                             {
-                                continue; // Nieznany format - ignoruj
+                                continue;
                             }
 
                             var type = typeProp.GetString();
@@ -73,8 +71,10 @@ namespace Solario.Websockets
                             {
                                 var input = JsonSerializer.Deserialize<PlayerInput>(msg, _jsonOptions);
 
-                                if (input != null && int.TryParse(input.PlayerId, out var pid))
+                                if (input != null && !string.IsNullOrEmpty(input.PlayerId))
                                 {
+                                    var pid = input.PlayerId;
+
                                     if (selfPlayerId != pid)
                                     {
                                         _simulationService.InitPlayer(pid, 0, 0, 0, 0, 1, "default"); 
@@ -88,23 +88,23 @@ namespace Solario.Websockets
                                 var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg, _jsonOptions);
 
                                 if (cmd != null &&
-                                    int.TryParse(cmd.PlayerId, out var pid) &&
+                                    !string.IsNullOrEmpty(cmd.PlayerId) &&
                                     !string.IsNullOrWhiteSpace(cmd.Planet))
                                 {
-                                    _logger.LogInformation("Player {PlayerId} entering quiz on {Planet}", pid, cmd.Planet);
-                                    selfPlayerId = pid;
-                                    _simulationService.EnterQuiz(pid, cmd.Planet);
+                                    _logger.LogInformation("Player {PlayerId} entering quiz on {Planet}", cmd.PlayerId, cmd.Planet);
+                                    selfPlayerId = cmd.PlayerId;
+                                    _simulationService.EnterQuiz(cmd.PlayerId, cmd.Planet);
                                 }
                             }
                             else if (type == "leave_quiz")
                             {
                                 var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg, _jsonOptions);
 
-                                if (cmd != null && int.TryParse(cmd.PlayerId, out var pid))
+                                if (cmd != null && !string.IsNullOrEmpty(cmd.PlayerId))
                                 {
-                                    _logger.LogInformation("Player {PlayerId} leaving quiz", pid);
-                                    selfPlayerId = pid;
-                                    _simulationService.LeaveQuiz(pid);
+                                    _logger.LogInformation("Player {PlayerId} leaving quiz", cmd.PlayerId);
+                                    selfPlayerId = cmd.PlayerId;
+                                    _simulationService.LeaveQuiz(cmd.PlayerId);
                                 }
                             }
 
@@ -114,7 +114,6 @@ namespace Solario.Websockets
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Error processing WebSocket message");
-                            // Nie przerywaj pętli przy błędzie aplikacji
                         }
                     }
                 }, cts.Token);
@@ -148,6 +147,11 @@ namespace Solario.Websockets
             }
             finally
             {
+                if (selfPlayerId != "0")
+                {
+                    await _simulationService.RemovePlayerAsync(selfPlayerId);
+                }
+
                 cts.Dispose();
                 if (webSocket.State != WebSocketState.Closed)
                 {

@@ -88,8 +88,7 @@ namespace Solario.Controllers
             user.EquippedSkin = itemId;
             await _repo.UpdateAsync(userId, user);
 
-            // Aktualizacja na żywo dla treningu (ID 0)
-            _simulationService.UpdatePlayerSkin(0, itemId);
+            _simulationService.UpdatePlayerSkin("0", itemId);
 
             return Ok(new { message = "Skin equipped", equippedSkin = itemId });
         }

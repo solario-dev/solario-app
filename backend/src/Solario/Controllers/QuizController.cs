@@ -15,12 +15,9 @@ public class QuizController : ControllerBase
         _quiz = quiz;
     }
 
-    // =============================
-    // GET QUESTIONS
-    // =============================
     [HttpGet("questions")]
     public async Task<IActionResult> GetQuestions(
-        [FromQuery] int playerId,
+        [FromQuery] string playerId,
         [FromQuery] string planet,
         [FromQuery] int count)
     {
@@ -28,13 +25,10 @@ public class QuizController : ControllerBase
         return Ok(result);
     }
 
-    // =============================
-    // ANSWER
-    // =============================
     [HttpPost("questions/{questionId:guid}/answer")]
     public async Task<IActionResult> Answer(
         Guid questionId,
-        [FromQuery] int playerId,
+        [FromQuery] string playerId,
         [FromQuery] double remainingRatio,
         [FromBody] AnswerRequest req)
     {
@@ -48,13 +42,10 @@ public class QuizController : ControllerBase
         return Ok(new { correct });
     }
 
-    // =============================
-    // TIMEOUT
-    // =============================
     [HttpPost("questions/{questionId:guid}/timeout")]
     public async Task<IActionResult> Timeout(
         Guid questionId,
-        [FromQuery] int playerId)
+        [FromQuery] string playerId)
     {
         await _quiz.HandleTimeoutAsync(playerId, questionId);
         return Ok();
