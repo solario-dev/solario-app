@@ -21,10 +21,6 @@ namespace Solario.Controllers
             _service = service;
         }
 
-        // =====================================
-        // QUIZ: pobranie pytań
-        // =====================================
-        // GET: api/questions?planet=mars&count=5
         [HttpGet]
         public async Task<IActionResult> GetByPlanet(
             [FromQuery] string planet,
@@ -33,18 +29,24 @@ namespace Solario.Controllers
             if (string.IsNullOrWhiteSpace(planet))
                 return BadRequest("Planet name is required.");
 
-            var questions = await _repo
-                .GetRandomByPlanetAsync(
+            var entities = await _repo.GetRandomByPlanetAsync(
                     planet.Trim().ToLowerInvariant(),
                     count);
+            
+            // Mapowanie z losowaniem kolejności odpowiedzi (Shuffle)
+            var dtos = entities.Select(q => new QuestionDto 
+            {
+                Id = q.Id,
+                Text = q.Text,
+                Answers = q.Answers
+                    .OrderBy(_ => Guid.NewGuid()) // Losowanie odpowiedzi
+                    .Select(a => new AnswerDto { Id = a.Id, Text = a.Text })
+                    .ToList()
+            });
 
-            return Ok(questions);
+            return Ok(dtos);
         }
 
-        // =====================================
-        // QUIZ: odpowiedź
-        // =====================================
-        // POST: api/questions/{id}/answer?playerId=1&remainingRatio=0.73
         [HttpPost("{id:guid}/answer")]
         public async Task<IActionResult> Answer(
             Guid id,
@@ -64,10 +66,6 @@ namespace Solario.Controllers
             return Ok(new { isCorrect = correct });
         }
 
-        // =====================================
-        // QUIZ: timeout
-        // =====================================
-        // POST: api/questions/{id}/timeout?playerId=1
         [HttpPost("{id:guid}/timeout")]
         public async Task<IActionResult> Timeout(
             Guid id,
@@ -77,22 +75,29 @@ namespace Solario.Controllers
             return Ok();
         }
 
-        // =====================================
-        // ADMIN: dodawanie pytania
-        // =====================================
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateQuestionRequest request)
         {
             try
             {
-                var question =
-                    await _service.CreateQuestionAsync(request);
+                var question = await _service.CreateQuestionAsync(request);
+
+                var questionDto = new QuestionDto
+                {
+                    Id = question.Id,
+                    Text = question.Text,
+                    Answers = question.Answers.Select(a => new AnswerDto 
+                    { 
+                        Id = a.Id, 
+                        Text = a.Text 
+                    }).ToList()
+                };
 
                 return CreatedAtAction(
-                    nameof(Create),
-                    new { id = question.Id },
-                    question);
+                    nameof(GetByPlanet), 
+                    new { planet = question.PlanetName }, 
+                    questionDto);
             }
             catch (ArgumentException ex)
             {

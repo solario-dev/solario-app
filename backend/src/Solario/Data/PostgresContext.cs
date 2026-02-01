@@ -16,11 +16,8 @@ namespace Solario.Data
         {
             modelBuilder.Entity<Question>()
             .HasMany(q => q.Answers)
-            .WithOne()
+            .WithOne(a => a.Question)
             .HasForeignKey(a => a.QuestionId);
         }
     }
-
-
 }
-

@@ -15,7 +15,7 @@ using Solario.Websockets;
 using System.Net.WebSockets;
 using Serilog;
 using Microsoft.EntityFrameworkCore;
-
+using System.Text.Json.Serialization; // Dodane
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,9 +55,13 @@ builder.Services.AddScoped<ShopRepository>();
 builder.Services.AddScoped<ShopService>();
 builder.Services.AddScoped<DbSeeder>();
 
-builder.Services.AddControllers();
+// FIX: Dodano obsługę cykli w JSON (ReferenceHandler.IgnoreCycles)
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
-// Poprawna konfiguracja Postgresa (zostawiamy)
 builder.Services.AddDbContext<PostgresContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Postgres")
@@ -99,13 +103,10 @@ builder.Services.AddCors(p => p.AddPolicy("AllowReact", policy =>
           .AllowAnyMethod()
           .AllowCredentials()));
 
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<SimulationService>();
 builder.Services.AddSingleton<SimulationWebSocketHandler>();
-
-// USUNIĘTO: Błędna, zduplikowana linia z ConnectionString("Default") została usunięta stąd.
 
 var app = builder.Build();
 

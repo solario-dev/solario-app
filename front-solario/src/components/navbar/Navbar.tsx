@@ -30,7 +30,6 @@ export default function Navbar() {
         fixed top-0 w-full z-[1000]
       "
     >
-      {/* Logo / nazwa aplikacji */}
       <Link
         to="/dashboard"
         className="
@@ -44,7 +43,6 @@ export default function Navbar() {
         <p className="text-sm font-geist text-[var(--color-primary)]/50">{state !== "idle" ? state : ""}</p>
       </Link>
 
-      {/* Linki po prawej stronie */}
       <div className="flex items-center space-x-8 text-lg">
         {isAuthenticated && <Saldo />}
 
@@ -65,6 +63,19 @@ export default function Navbar() {
           <div className="flex items-center space-x-8 text-lg">
             {isAuthenticated ? (
                 <>
+                    {user?.role === "Admin" && (
+                        <Link
+                        to="/admin"
+                        className="
+                            text-[#FF365D] font-geist
+                            hover:text-white hover:drop-shadow-[0_0_6px_#FF365D]
+                            transition-all duration-300
+                        "
+                        >
+                        ADMIN PANEL
+                        </Link>
+                    )}
+
                     <Link
                     to="/shop"
                     className="
