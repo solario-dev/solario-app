@@ -142,8 +142,6 @@ public class SimulationService
         }
     }
 
-<<<<<<< HEAD
-=======
     public bool EnterQuiz(int playerId, string planetName)
     {
         lock (_lock)
@@ -170,13 +168,19 @@ public class SimulationService
         }
     }
 
-
+    public Player? GetPlayer(int playerId)
+    {
+        lock (_lock)
+        {
+            _players.TryGetValue(playerId, out var player);
+            return player;
+        }
+    }
 
 
     // ----------------------------
     // SIMULATION LOOP
     // ----------------------------
->>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
     public void Start()
     {
         if (_running) return;
@@ -220,33 +224,11 @@ public class SimulationService
                 }
 
                 foreach (var player in _players.Values)
-<<<<<<< HEAD
-                    player.PerformMovement(_dt * SimSpeed);
-=======
                 {
                     player.PerformMovement(_dt * SimSpeed);
                 }
->>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
             }
             Thread.Sleep((int)(_dt * 1000));
         }
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
 }
-=======
-
-}
->>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
-=======
-    public Player? GetPlayer(int playerId)
-    {
-        lock (_lock)
-        {
-            _players.TryGetValue(playerId, out var player);
-            return player;
-        }
-    }
-}
-
->>>>>>> b0667ce (sesja debugowania)

@@ -50,7 +50,15 @@ public class Player
     // =============================
     // CONSTRUCTOR
     // =============================
-    public Player(int id, float x, float y, float z, float rotation, float speed)
+    public Player(
+        int id,
+        float x,
+        float y,
+        float z,
+        float rotation,
+        float speed,
+        string skin
+    )
     {
         Id = id;
         PosX = x;
@@ -61,6 +69,7 @@ public class Player
         DistanceTraveled = 0f;
         Skin = skin;
     }
+
 
     public void Turn(float newRotation)
     {
