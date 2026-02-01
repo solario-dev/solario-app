@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Solario.Services;
 using Solario.Models;
+using Solario.Dto;
+using Solario.Repository;
 
 namespace Solario.Controllers
 {

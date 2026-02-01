@@ -20,7 +20,7 @@ public class QuizService
     // =============================
     // GET QUESTIONS FOR QUIZ
     // =============================
-    public async Task<List<QuizQuestionDto>> GetQuestionsAsync(
+    public async Task<List<QuestionDto>> GetQuestionsAsync(
         int playerId,
         string planet,
         int count)
@@ -32,7 +32,7 @@ public class QuizService
         var questions =
             await _questions.GetRandomByPlanetAsync(planet, count);
 
-        return questions.Select(q => new QuizQuestionDto
+        return questions.Select(q => new QuestionDto
         {
             Id = q.Id,
             Text = q.Text,

@@ -40,5 +40,17 @@ namespace Solario.Repository
                 _db.Questions.Add(question);
                 await _db.SaveChangesAsync();
         }
+
+        public async Task<List<Question>> GetRandomByPlanetAsync(
+            string planet,
+            int count)
+        {
+            return await _db.Questions
+                .Include(q => q.Answers)
+                .Where(q => q.PlanetName == planet)
+                .OrderBy(_ => Guid.NewGuid())
+                .Take(count)
+                .ToListAsync();
+        }
     }
 }

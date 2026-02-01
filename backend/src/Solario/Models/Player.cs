@@ -17,15 +17,6 @@ public class Player
     public float DistanceTraveled { get; private set; }
     public string Skin { get; private set; }
 
-<<<<<<< HEAD
-    private bool _moveForward = false;
-    private bool _moveBackward = false;
-    private bool _turnLeft = false;
-    private bool _turnRight = false;
-    private bool _turbo = false;
-
-    public Player(int id, float x, float y, float z, float rotation, float speed, string skin = "default")
-=======
     // =============================
     // GAME STATE
     // =============================
@@ -60,7 +51,6 @@ public class Player
     // CONSTRUCTOR
     // =============================
     public Player(int id, float x, float y, float z, float rotation, float speed)
->>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
     {
         Id = id;
         PosX = x;
@@ -72,34 +62,18 @@ public class Player
         Skin = skin;
     }
 
-<<<<<<< HEAD
-=======
-    // =============================
-    // ROTATION
-    // =============================
->>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
     public void Turn(float newRotation)
     {
         Rotation = newRotation % 360f;
         if (Rotation < 0) Rotation += 360f;
     }
 
-<<<<<<< HEAD
-=======
-    // =============================
-    // INPUT – EXPLORATION
-    // =============================
->>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
     public void SetMoveForward(bool move) => _moveForward = move;
     public void SetMoveBackward(bool move) => _moveBackward = move;
     public void SetTurnLeft(bool turn) => _turnLeft = turn;
     public void SetTurnRight(bool turn) => _turnRight = turn;
     public void SetTurbo(bool turbo) => _turbo = turbo;
 
-<<<<<<< HEAD
-    public void PerformMovement(float dt, float turnRate = 360f)
-    {
-=======
     // =============================
     // ORBIT MOVEMENT – FROM SIMULATION
     // =============================
@@ -155,7 +129,6 @@ public class Player
         if (State == PlayerState.Disconnected)
             return;
 
->>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
         if (_turnLeft)
         {
             float turnAngle = turnRate * dt;
@@ -170,29 +143,6 @@ public class Player
             if (Rotation < 0) Rotation += 360f;
         }
 
-<<<<<<< HEAD
-        float rad = Rotation * (float)Math.PI / 180f;
-        float speedMultiplier = _turbo ? 5.0f : 1.0f;
-        float effectiveSpeed = Speed * speedMultiplier;
-        float dx = (float)Math.Sin(rad) * effectiveSpeed;
-        float dz = (float)Math.Cos(rad) * effectiveSpeed;
-
-        if (_moveForward)
-        {
-            PosX += dx;
-            PosZ += dz;
-            DistanceTraveled += effectiveSpeed;
-            _moveForward = false;
-        }
-
-        if (_moveBackward)
-        {
-            PosX -= dx;
-            PosZ -= dz;
-            DistanceTraveled += effectiveSpeed;
-            _moveBackward = false;
-        }
-=======
         if (State == PlayerState.Exploration)
         {
             float rad = Rotation * (float)Math.PI / 180f;
@@ -226,6 +176,5 @@ public class Player
         _moveBackward = false;
         _orbitDeltaX = 0f;
         _orbitDeltaZ = 0f;
->>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
     }
 }

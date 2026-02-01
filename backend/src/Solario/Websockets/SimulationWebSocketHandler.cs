@@ -58,14 +58,11 @@ namespace Solario.Websockets
 
                                 if (input != null && int.TryParse(input.PlayerId, out var pid))
                                 {
-<<<<<<< HEAD
                                     // Tutaj normalnie pobralibyśmy skin gracza z bazy danych
                                     // Na ten moment inicjujemy z 'default' lub tym co już jest w symulacji
                                     _simulationService.InitPlayer(pid, 0, 0, 0, 0, 1, "default"); 
-=======
                                     selfPlayerId = pid;
                                     _simulationService.ApplyPlayerInput(pid, input);
->>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
                                 }
                             }
                             else if (type == "enter_quiz")

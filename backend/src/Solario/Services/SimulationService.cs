@@ -232,8 +232,21 @@ public class SimulationService
         }
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 }
 =======
 
 }
 >>>>>>> 51cbe0e (Pytania, Update Websocketa, Podstawowa logika quizu + statek porusza się razem z planetą)
+=======
+    public Player? GetPlayer(int playerId)
+    {
+        lock (_lock)
+        {
+            _players.TryGetValue(playerId, out var player);
+            return player;
+        }
+    }
+}
+
+>>>>>>> b0667ce (sesja debugowania)
