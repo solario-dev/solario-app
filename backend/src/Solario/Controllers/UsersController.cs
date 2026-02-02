@@ -88,7 +88,7 @@ namespace Solario.Controllers
             user.EquippedSkin = itemId;
             await _repo.UpdateAsync(userId, user);
 
-            _simulationService.UpdatePlayerSkin("0", itemId);
+            _simulationService.UpdatePlayerSkin(userId, itemId);
 
             return Ok(new { message = "Skin equipped", equippedSkin = itemId });
         }
