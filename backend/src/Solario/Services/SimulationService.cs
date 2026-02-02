@@ -61,6 +61,29 @@ public class SimulationService
             {
                 _players[id] = new Player(id, x, y, z, rotation, speed, skin);
                 _playerSkins[id] = skin;
+
+                if (id != "0")
+                {
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            using (var scope = _scopeFactory.CreateScope())
+                            {
+                                var repo = scope.ServiceProvider.GetRequiredService<UserRepository>();
+                                var user = await repo.GetByIdAsync(id);
+                                if (user != null && !string.IsNullOrEmpty(user.EquippedSkin))
+                                {
+                                    UpdatePlayerSkin(id, user.EquippedSkin);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Failed to fetch skin for user {id}");
+                        }
+                    });
+                }
             }
         }
     }
@@ -71,7 +94,15 @@ public class SimulationService
         {
             if (_players.TryGetValue(id, out var existing))
             {
-                _players[id] = new Player(id, existing.PosX, existing.PosY, existing.PosZ, existing.Rotation, existing.Speed, skin);
+                _players[id] = new Player(
+                    id, 
+                    existing.PosX, 
+                    existing.PosY, 
+                    existing.PosZ, 
+                    existing.Rotation, 
+                    existing.Speed, 
+                    skin 
+                );
                 _playerSkins[id] = skin;
             }
         }
