@@ -8,6 +8,6 @@ namespace Solario.Dto
 
         public float DistanceTraveledDelta { get; set; } = 0f;
 
-        public List<string> NewVisitedPlanets { get; set; } = new();
+        public int NewVisitedPlanets { get; set; } = 0;
     }
 }

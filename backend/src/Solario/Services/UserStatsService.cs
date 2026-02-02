@@ -35,7 +35,7 @@ namespace Solario.Services
                 updates.Add(Builders<User>.Update
                     .Inc(u => u.DistanceTraveled, delta.DistanceTraveledDelta));
 
-            if (delta.NewVisitedPlanets.Any())
+            if (delta.NewVisitedPlanets != 0)
                 updates.Add(Builders<User>.Update
                     .Inc(u => u.PlanetsVisited, delta.NewVisitedPlanets));
 

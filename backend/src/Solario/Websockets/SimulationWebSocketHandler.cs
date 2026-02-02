@@ -1,3 +1,5 @@
+namespace Solario.Websockets;
+
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -5,159 +7,117 @@ using Solario.Services;
 using Solario.Models;
 using Microsoft.Extensions.Logging;
 
-namespace Solario.Websockets
+public class SimulationWebSocketHandler
 {
-    public class SimulationWebSocketHandler
+    private readonly SimulationService _simulation;
+    private readonly ILogger<SimulationWebSocketHandler> _logger;
+    private readonly JsonSerializerOptions _jsonOptions =
+        new() { PropertyNameCaseInsensitive = true };
+
+    public SimulationWebSocketHandler(
+        SimulationService simulation,
+        ILogger<SimulationWebSocketHandler> logger)
     {
-        private readonly SimulationService _simulationService;
-        private readonly ILogger<SimulationWebSocketHandler> _logger;
-        private readonly JsonSerializerOptions _jsonOptions;
+        _simulation = simulation;
+        _logger = logger;
+    }
 
-        public SimulationWebSocketHandler(SimulationService simulationService, ILogger<SimulationWebSocketHandler> logger)
+    public async Task HandleAsync(WebSocket socket)
+    {
+        var buffer = new byte[4096];
+        string playerId = "0";
+        var cts = new CancellationTokenSource();
+
+        try
         {
-            _simulationService = simulationService;
-            _logger = logger;
-            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var receive = Task.Run(async () =>
+            {
+                while (socket.State == WebSocketState.Open)
+                {
+                    var result = await socket.ReceiveAsync(
+                        new ArraySegment<byte>(buffer), cts.Token);
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                        break;
+
+                    var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    using var doc = JsonDocument.Parse(msg);
+
+                    if (!doc.RootElement.TryGetProperty("type", out var t))
+                        continue;
+
+                    switch (t.GetString())
+                    {
+                        case "input":
+                        {
+                            var input = JsonSerializer.Deserialize<PlayerInput>(msg, _jsonOptions);
+                            if (input?.PlayerId == null) break;
+
+                            if (playerId != input.PlayerId)
+                            {
+                                playerId = input.PlayerId;
+                                _simulation.InitPlayer(playerId, 0, 0, 0, 0, 1, "default");
+                            }
+
+                            _simulation.ApplyPlayerInput(playerId, input);
+                            break;
+                        }
+
+                        case "enter_quiz":
+                        {
+                            var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg, _jsonOptions);
+                            if (cmd?.PlayerId != null && cmd.Planet != null)
+                            {
+                                playerId = cmd.PlayerId;
+                                _simulation.EnterQuiz(playerId, cmd.Planet);
+                            }
+                            break;
+                        }
+
+                        case "leave_quiz":
+                        {
+                            var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg, _jsonOptions);
+                            if (cmd?.PlayerId != null)
+                            {
+                                playerId = cmd.PlayerId;
+                                _simulation.LeaveQuiz(playerId);
+                            }
+                            break;
+                        }
+                    }
+                }
+            });
+
+            var send = Task.Run(async () =>
+            {
+                while (socket.State == WebSocketState.Open)
+                {
+                    var json = _simulation.GetFullStateJson(playerId);
+                    var bytes = Encoding.UTF8.GetBytes(json);
+
+                    await socket.SendAsync(
+                        new ArraySegment<byte>(bytes),
+                        WebSocketMessageType.Text,
+                        true,
+                        cts.Token);
+
+                    await Task.Delay(33, cts.Token);
+                }
+            });
+
+            await Task.WhenAny(receive, send);
         }
-
-        public async Task HandleAsync(WebSocket webSocket)
+        finally
         {
-            var buffer = new byte[4 * 1024];
-            string selfPlayerId = "0"; 
-            var cts = new CancellationTokenSource();
+            if (playerId != "0")
+                await _simulation.RemovePlayerAsync(playerId);
 
-            _logger.LogInformation("WebSocket connection established");
-
-            try
-            {
-                var receiveTask = Task.Run(async () =>
-                {
-                    while (webSocket.State == WebSocketState.Open && !cts.Token.IsCancellationRequested)
-                    {
-                        try
-                        {
-                            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
-
-                            if (result.MessageType == WebSocketMessageType.Close)
-                            {
-                                cts.Cancel();
-                                break;
-                            }
-
-                            var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
-
-                            JsonDocument doc;
-                            try
-                            {
-                                doc = JsonDocument.Parse(msg);
-                            }
-                            catch (JsonException)
-                            {
-                                _logger.LogWarning("Received invalid JSON");
-                                continue;
-                            }
-
-                            var root = doc.RootElement;
-
-                            if (!root.TryGetProperty("Type", out var typeProp) && 
-                                !root.TryGetProperty("type", out typeProp))
-                            {
-                                continue;
-                            }
-
-                            var type = typeProp.GetString();
-
-                            if (type == "input")
-                            {
-                                var input = JsonSerializer.Deserialize<PlayerInput>(msg, _jsonOptions);
-
-                                if (input != null && !string.IsNullOrEmpty(input.PlayerId))
-                                {
-                                    var pid = input.PlayerId;
-
-                                    if (selfPlayerId != pid)
-                                    {
-                                        _simulationService.InitPlayer(pid, 0, 0, 0, 0, 1, "default"); 
-                                    }
-                                    selfPlayerId = pid;
-                                    _simulationService.ApplyPlayerInput(pid, input);
-                                }
-                            }
-                            else if (type == "enter_quiz")
-                            {
-                                var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg, _jsonOptions);
-
-                                if (cmd != null &&
-                                    !string.IsNullOrEmpty(cmd.PlayerId) &&
-                                    !string.IsNullOrWhiteSpace(cmd.Planet))
-                                {
-                                    _logger.LogInformation("Player {PlayerId} entering quiz on {Planet}", cmd.PlayerId, cmd.Planet);
-                                    selfPlayerId = cmd.PlayerId;
-                                    _simulationService.EnterQuiz(cmd.PlayerId, cmd.Planet);
-                                }
-                            }
-                            else if (type == "leave_quiz")
-                            {
-                                var cmd = JsonSerializer.Deserialize<PlayerCommand>(msg, _jsonOptions);
-
-                                if (cmd != null && !string.IsNullOrEmpty(cmd.PlayerId))
-                                {
-                                    _logger.LogInformation("Player {PlayerId} leaving quiz", cmd.PlayerId);
-                                    selfPlayerId = cmd.PlayerId;
-                                    _simulationService.LeaveQuiz(cmd.PlayerId);
-                                }
-                            }
-
-                        }
-                        catch (OperationCanceledException) { break; }
-                        catch (WebSocketException) { cts.Cancel(); break; }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error processing WebSocket message");
-                        }
-                    }
-                }, cts.Token);
-
-                var sendTask = Task.Run(async () =>
-                {
-                    while (webSocket.State == WebSocketState.Open && !cts.Token.IsCancellationRequested)
-                    {
-                        try
-                        {
-                            var json = _simulationService.GetFullStateJson(selfPlayerId);
-                            var bytes = Encoding.UTF8.GetBytes(json);
-
-                            await webSocket.SendAsync(
-                                new ArraySegment<byte>(bytes),
-                                WebSocketMessageType.Text,
-                                true,
-                                cts.Token
-                            );
-
-                            await Task.Delay(33, cts.Token);
-                        }
-                        catch (OperationCanceledException) { break; }
-                        catch (WebSocketException) { cts.Cancel(); break; }
-                    }
-                }, cts.Token);
-
-                await Task.WhenAny(receiveTask, sendTask);
-                cts.Cancel();
-                await Task.WhenAll(receiveTask, sendTask);
-            }
-            finally
-            {
-                if (selfPlayerId != "0")
-                {
-                    await _simulationService.RemovePlayerAsync(selfPlayerId);
-                }
-
-                cts.Dispose();
-                if (webSocket.State != WebSocketState.Closed)
-                {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
-                }
-            }
+            cts.Cancel();
+            if (socket.State != WebSocketState.Closed)
+                await socket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    "closing",
+                    CancellationToken.None);
         }
     }
 }

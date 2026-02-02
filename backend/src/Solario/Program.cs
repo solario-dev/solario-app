@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +15,7 @@ using Solario.Websockets;
 using System.Net.WebSockets;
 using Serilog;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,12 +55,9 @@ builder.Services.AddScoped<ShopRepository>();
 builder.Services.AddScoped<ShopService>();
 builder.Services.AddScoped<DbSeeder>();
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    });
+builder.Services.AddControllers();
 
+// Poprawna konfiguracja Postgresa (zostawiamy)
 builder.Services.AddDbContext<PostgresContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Postgres")
@@ -102,10 +99,13 @@ builder.Services.AddCors(p => p.AddPolicy("AllowReact", policy =>
           .AllowAnyMethod()
           .AllowCredentials()));
 
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<SimulationService>();
 builder.Services.AddSingleton<SimulationWebSocketHandler>();
+
+// USUNIĘTO: Błędna, zduplikowana linia z ConnectionString("Default") została usunięta stąd.
 
 var app = builder.Build();
 
@@ -170,7 +170,6 @@ simulation.InitPlanet("Jupiter", 8365f, 4332.59f, 9.9f, 1.398f);
 simulation.InitPlanet("Saturn", 14816f, 10759.22f, 10.7f, 1.164f);
 simulation.InitPlanet("Uranus", 29304f, 30687.15f, 17.2f, 0.507f);
 simulation.InitPlanet("Neptune", 45530f, 60190.03f, 16.1f, 0.492f);
-
 
 simulation.Start();
 
