@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Solario.Dto;
 using Solario.Services;
 
 namespace Solario.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/quiz")]
 public class QuizController : ControllerBase

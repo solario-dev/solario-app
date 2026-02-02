@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Solario.Models;
 using Solario.Repository;
 using BCrypt.Net;
@@ -26,6 +27,7 @@ namespace Solario.Controllers
             _simulationService = simulationService;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll() =>
             Ok(await _repo.GetAllAsync());
@@ -74,6 +76,7 @@ namespace Solario.Controllers
             return Ok(new { token, user });
         }
 
+        [Authorize]
         [HttpPost("equip/{userId}/{itemId}")]
         public async Task<IActionResult> EquipSkin(string userId, string itemId)
         {
@@ -93,6 +96,7 @@ namespace Solario.Controllers
             return Ok(new { message = "Skin equipped", equippedSkin = itemId });
         }
 
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] User user)
         {
@@ -101,6 +105,7 @@ namespace Solario.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -120,7 +125,7 @@ namespace Solario.Controllers
 
             if (string.IsNullOrEmpty(keyString) || keyString.Length < 32)
             {
-                keyString = "super_dlugi_sekretny_klucz_ktory_ma_32_znaki_!";
+                throw new InvalidOperationException("JWT_KEY must be at least 32 characters. Set it in .env file.");
             }
 
             var key = Encoding.UTF8.GetBytes(keyString);

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Solario.Models;
 using Solario.Repository;
 using Solario.Services;
@@ -31,6 +32,7 @@ namespace Solario.Controllers
             return Ok(item);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ShopItem item)
         {
@@ -38,6 +40,7 @@ namespace Solario.Controllers
             return CreatedAtAction(nameof(GetById), new { id = item.Id }, item);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] ShopItem item)
         {
@@ -46,6 +49,7 @@ namespace Solario.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -54,6 +58,7 @@ namespace Solario.Controllers
             return NoContent();
         }
 
+        [Authorize]
         [HttpPost("purchase/{userId}/{itemId}")]
         public async Task<IActionResult> Purchase(string userId, string itemId)
         {
@@ -62,6 +67,7 @@ namespace Solario.Controllers
             return BadRequest(new { message = result });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("upload-image")]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
