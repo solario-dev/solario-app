@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Solario.Services;
 using Solario.Models;
@@ -6,6 +7,7 @@ using Solario.Repository;
 
 namespace Solario.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/questions")]
     public class QuestionsController : ControllerBase
@@ -20,7 +22,8 @@ namespace Solario.Controllers
             _repo = repo;
             _service = service;
         }
-
+        
+        
         [HttpGet]
         public async Task<IActionResult> GetByPlanet(
             [FromQuery] string planet,
@@ -73,6 +76,7 @@ namespace Solario.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateQuestionRequest request)

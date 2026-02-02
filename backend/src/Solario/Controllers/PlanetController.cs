@@ -9,7 +9,7 @@ namespace Solario.Controllers;
 public class PlanetController : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetWeather()
+    public async Task<IActionResult> GetPlanets()
     {
         var service = new PlanetService();
         var planets = await service.GetPlanets();
