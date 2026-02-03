@@ -44,8 +44,8 @@ namespace Solario.Models
         [BsonElement("quizzesCompleted")]
         public int QuizzesCompleted { get; set; } = 0;
 
-        [BsonElement("planetsVisited")]
-        public List<string> PlanetsVisited { get; set; } = new();
+        [BsonElement("conqueredPlanets")]
+        public List<string> ConqueredPlanets { get; set; } = new();
 
         // =============================
         // META / INVENTORY

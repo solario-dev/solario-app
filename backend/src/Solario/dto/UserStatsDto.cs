@@ -11,5 +11,5 @@ public class UserStatsDto
 
     public int DistanceTraveled { get; set; }
 
-    public List<string> PlanetsVisited { get; set; } = new();
+    public List<string> ConqueredPlanets { get; set; } = new();
 }

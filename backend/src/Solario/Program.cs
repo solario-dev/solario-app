@@ -65,32 +65,40 @@ builder.Services.AddDbContext<PostgresContext>(options =>
 builder.Services.AddScoped<QuestionRepository>();
 builder.Services.AddScoped<QuestionService>();
 
-var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
-var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "solario";
-var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "solario_frontend";
-
-if (!string.IsNullOrEmpty(jwtKey))
+// --- FIX START: Ujednolicona logika klucza JWT (zgodna z UsersController) ---
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(jwtKey))
 {
-    builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = jwtIssuer,
-            ValidateAudience = true,
-            ValidAudience = jwtAudience,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ValidateLifetime = true,
-            RoleClaimType = "role"
-        };
-    });
+    jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 }
+
+// Fallback, żeby Program.cs używał tego samego klucza co UsersController w razie braku env
+if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
+{
+    jwtKey = "super_dlugi_sekretny_klucz_ktory_ma_32_znaki_!";
+}
+// --- FIX END ---
+
+// Usuwamy warunek if (!string.IsNullOrEmpty(jwtKey)), bo teraz klucz zawsze istnieje
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "solario",
+        ValidateAudience = true,
+        ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "solario_frontend",
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ValidateLifetime = true,
+        RoleClaimType = "role"
+    };
+});
 
 builder.Services.AddCors(p => p.AddPolicy("AllowReact", policy =>
     policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
@@ -144,15 +152,9 @@ app.UseHttpsRedirection();
 app.UseCors("AllowReact");
 app.UseStaticFiles(); 
 
-if (!string.IsNullOrEmpty(jwtKey))
-{
-    app.UseAuthentication();
-    app.UseAuthorization();
-}
-else
-{
-    app.UseAuthorization();
-}
+// Przeniesione Authentication przed Authorization (wymagane!)
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseWebSockets(new WebSocketOptions
 {
@@ -189,6 +191,8 @@ simulation.InitPlanet("Saturn", 14816f, 10759.22f, 10.7f, 1.164f);
 simulation.InitPlanet("Uranus", 29304f, 30687.15f, 17.2f, 0.507f);
 simulation.InitPlanet("Neptune", 45530f, 60190.03f, 16.1f, 0.492f);
 
+// ID gracza to teraz string
+simulation.InitPlayer("0", 0, 0, 0, 0, 1);
 
 simulation.Start();
 
