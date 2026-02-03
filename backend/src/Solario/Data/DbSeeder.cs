@@ -46,6 +46,30 @@ namespace Solario.Data
                     Credits = 999999,
                 };
                 await _userRepo.CreateAsync(admin);
+                _logger.LogInformation("Admin account created.");
+            }
+            else
+            {
+                // FIX: Jeśli admin istnieje, ale ma złą rolę lub stare dane, naprawiamy go
+                bool changed = false;
+                if (existingAdmin.Role != "Admin") 
+                {
+                    existingAdmin.Role = "Admin";
+                    changed = true;
+                }
+                
+                // Opcjonalnie: upewnij się, że ma kredyty do testów
+                if (existingAdmin.Credits < 500000)
+                {
+                    existingAdmin.Credits = 999999;
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    await _userRepo.UpdateAsync(existingAdmin.Id!, existingAdmin);
+                    _logger.LogInformation("Admin account updated with correct privileges.");
+                }
             }
 
             var userEmail = "user@solario.com";

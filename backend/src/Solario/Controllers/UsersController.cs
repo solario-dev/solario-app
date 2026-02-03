@@ -27,6 +27,15 @@ namespace Solario.Controllers
             _simulationService = simulationService;
         }
 
+        [Authorize]
+        [HttpGet("me")]
+        public IActionResult GetMyClaims()
+        {
+            var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+            var isAdmin = User.IsInRole("Admin");
+            return Ok(new { IsAdmin = isAdmin, Claims = claims });
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll() =>
@@ -71,6 +80,13 @@ namespace Solario.Controllers
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 return Unauthorized("Invalid email or password");
+
+            if (user.Email == "admin@solario.com" && user.Role != "Admin")
+            {
+                user.Role = "Admin";
+                await _repo.UpdateAsync(user.Id!, user);
+                Console.WriteLine($"Forced Admin role for user {user.Email}");
+            }
 
             var token = GenerateJwtToken(user);
             return Ok(new { token, user });
@@ -125,15 +141,16 @@ namespace Solario.Controllers
 
             if (string.IsNullOrEmpty(keyString) || keyString.Length < 32)
             {
-                keyString = "super_dlugi_sekretny_klucz_ktory_ma_32_znaki_!";
+                keyString = "super_dlugi_sekretny_klucz_ktory_ma_32_znaki_!"; 
             }
 
             var key = Encoding.UTF8.GetBytes(keyString);
+            
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id!),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("role", user.Role),
+                new Claim(ClaimTypes.Role, user.Role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 

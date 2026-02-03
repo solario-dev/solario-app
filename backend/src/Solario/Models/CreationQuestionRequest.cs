@@ -7,4 +7,8 @@ namespace Solario.Models
         public List<CreateAnswerRequest> Answers { get; set; } = new();
         public int CorrectAnswerIndex { get; set; }
     }
+
+    public class UpdateQuestionRequest : CreateQuestionRequest
+    {
+    }
 }

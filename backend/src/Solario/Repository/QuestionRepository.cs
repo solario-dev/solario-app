@@ -35,10 +35,23 @@ namespace Solario.Repository
                 .Select(q => (Guid?)q.CorrectAnswerId)
                 .FirstOrDefaultAsync();
         }
+
         public async Task AddAsync(Question question)
         {
                 _db.Questions.Add(question);
                 await _db.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(Question question)
+        {
+            _db.Questions.Update(question);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(Question question)
+        {
+            _db.Questions.Remove(question);
+            await _db.SaveChangesAsync();
         }
 
         public async Task<List<Question>> GetRandomByPlanetAsync(
