@@ -3,8 +3,11 @@ namespace Solario.Services;
 using Solario.Abstractions;
 using Solario.Dto;
 using Solario.Models;
-using Microsoft.Extensions.Logging;
+using Solario.Repository;
+
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 using System.Text.Json;
 
 public class SimulationService
@@ -75,36 +78,42 @@ public class SimulationService
         float speed,
         string skin = "default")
     {
+        bool fetchSkin = false;
+
         lock (_lock)
         {
-            if (!_players.ContainsKey(id))
-            {
-                _players[id] = new Player(id, x, y, z, rotation, speed, skin);
-                _playerSkins[id] = skin;
+            if (_players.ContainsKey(id))
+                return;
 
-                if (id != "0")
-                {
-                    Task.Run(async () =>
-                    {
-                        try
-                        {
-                            using (var scope = _scopeFactory.CreateScope())
-                            {
-                                var repo = scope.ServiceProvider.GetRequiredService<UserRepository>();
-                                var user = await repo.GetByIdAsync(id);
-                                if (user != null && !string.IsNullOrEmpty(user.EquippedSkin))
-                                {
-                                    UpdatePlayerSkin(id, user.EquippedSkin);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, $"Failed to fetch skin for user {id}");
-                        }
-                    });
-                }
+            _players[id] = new Player(id, x, y, z, rotation, speed, skin);
+            _playerSkins[id] = skin;
+
+            fetchSkin = id != "0";
+        }
+
+        if (fetchSkin)
+        {
+            _ = FetchPlayerSkinAsync(id);
+        }
+    }
+
+    private async Task FetchPlayerSkinAsync(string playerId)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var repo = scope.ServiceProvider.GetRequiredService<UserRepository>();
+ 
+
+            var user = await repo.GetByIdAsync(playerId);
+            if (user != null && !string.IsNullOrWhiteSpace(user.EquippedSkin))
+            {
+                UpdatePlayerSkin(playerId, user.EquippedSkin);
             }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch skin for user {PlayerId}", playerId);
         }
     }
 
@@ -112,19 +121,20 @@ public class SimulationService
     {
         lock (_lock)
         {
-            if (_players.TryGetValue(id, out var player))
-            {
-                _players[id] = new Player(
-                    id, 
-                    existing.PosX, 
-                    existing.PosY, 
-                    existing.PosZ, 
-                    existing.Rotation, 
-                    existing.Speed, 
-                    skin 
-                );
-                _playerSkins[id] = skin;
-            }
+            if (!_players.TryGetValue(id, out var player))
+                return;
+
+            _players[id] = new Player(
+                id,
+                player.PosX,
+                player.PosY,
+                player.PosZ,
+                player.Rotation,
+                player.Speed,
+                skin
+            );
+
+            _playerSkins[id] = skin;
         }
     }
 
@@ -282,8 +292,8 @@ public class SimulationService
     public void Start()
     {
         if (_running) return;
-        _running = true;
 
+        _running = true;
         _thread = new Thread(RunLoop) { IsBackground = true };
         _thread.Start();
     }
@@ -306,7 +316,8 @@ public class SimulationService
                 foreach (var planet in _planets)
                 {
                     var (dx, dz) = planet.GetDeltaMovement();
-                    if (dx == 0f && dz == 0f) continue;
+                    if (dx == 0f && dz == 0f)
+                        continue;
 
                     foreach (var player in _players.Values)
                     {
