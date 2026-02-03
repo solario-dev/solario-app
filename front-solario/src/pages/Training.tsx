@@ -18,7 +18,8 @@ export default function Training() {
   const { user } = useUser();
   const playerId = user?.id || "0";
 
-  const { connected, stop, ws } = useSimulationSocket("ws://localhost:5000/simulations/socket");
+  // FIX: Port 5001 dla WebSocketa
+  const { connected, stop, ws } = useSimulationSocket("ws://localhost:5001/simulations/socket");
 
   usePlayerInput(connected ? ws : null, playerId, !planetName);
 

@@ -32,9 +32,9 @@ namespace Solario.Services
 
             foreach (var planet in delta.NewVisitedPlanets)
             {
-                if (!user.PlanetsVisited.Contains(planet))
+                if (!user.ConqueredPlanets.Contains(planet))
                 {
-                    user.PlanetsVisited.Add(planet);
+                    user.ConqueredPlanets.Add(planet);
                 }
             }
 
@@ -61,7 +61,8 @@ namespace Solario.Services
                 CorrectAnswers = user.CorrectAnswers,
                 QuizzesCompleted = user.QuizzesCompleted,
                 DistanceTraveled = user.DistanceTraveled,
-                PlanetsVisited = user.PlanetsVisited
+                // ZMIANA: PlanetsVisited -> ConqueredPlanets
+                ConqueredPlanets = user.ConqueredPlanets
             };
         }
     }
