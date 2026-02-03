@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using Solario.Dto;
+using Solario.Models;
 
 namespace Solario.QuizLogic
 {

@@ -8,7 +8,8 @@ RUN dotnet restore
 
 # copy everything and publish
 COPY . .
-RUN dotnet publish -c Release -o /app/publish
+# CHANGED: Added "Solario.csproj" to target the project specifically
+RUN dotnet publish "Solario.csproj" -c Release -o /app/publish
 
 # runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0

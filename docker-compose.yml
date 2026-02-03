@@ -29,16 +29,11 @@ services:
     ports:
       - "5001:5000"
     environment:
-      # Mongo
       - MONGODB_CONNECTION_STRING=mongodb://mongo:27017
       - MONGODB_DATABASE=SolarioDb
-
-      # Postgres (EF Core)
       - ConnectionStrings__Postgres=Host=postgres;Port=5432;Database=solario;Username=solario;Password=solario
-
-      # ASP.NET
       - ASPNETCORE_ENVIRONMENT=Development
-      - JWT_KEY=super_dlugi_sekretny_klucz_ktory_ma_32_znaki_!
+      - JWT_KEY=RESET_TOKENOW_WYMUSZENIE_WYLOGOWANIA_V2_!!!
       - JWT_ISSUER=solario
       - JWT_AUDIENCE=solario_frontend
     depends_on:

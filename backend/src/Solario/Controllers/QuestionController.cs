@@ -1,13 +1,12 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Solario.Services;
 using Solario.Models;
 using Solario.Dto;
 using Solario.Repository;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Solario.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/questions")]
     public class QuestionsController : ControllerBase
@@ -22,12 +21,11 @@ namespace Solario.Controllers
             _repo = repo;
             _service = service;
         }
-        
-        
+
         [HttpGet]
         public async Task<IActionResult> GetByPlanet(
             [FromQuery] string planet,
-            [FromQuery] int count = 5)
+            [FromQuery] int count = 100)
         {
             if (string.IsNullOrWhiteSpace(planet))
                 return BadRequest("Planet name is required.");
@@ -40,71 +38,68 @@ namespace Solario.Controllers
             {
                 Id = q.Id,
                 Text = q.Text,
-                Answers = q.Answers
-                    .OrderBy(_ => Guid.NewGuid())
-                    .Select(a => new AnswerDto { Id = a.Id, Text = a.Text }).ToList()
+                CorrectAnswerId = q.CorrectAnswerId,
+                Answers = q.Answers.Select(a => new AnswerDto { Id = a.Id, Text = a.Text }).ToList()
             });
 
             return Ok(dtos);
         }
 
-        [HttpPost("{id:guid}/answer")]
-        public async Task<IActionResult> Answer(
-            Guid id,
-            [FromQuery] string playerId,
-            [FromQuery] double remainingRatio,
-            [FromBody] AnswerRequest request)
-        {
-            if (request == null || request.AnswerId == Guid.Empty)
-                return BadRequest("AnswerId is required.");
-
-            var correct = await _service.CheckAnswerAsync(
-                playerId,
-                id,
-                request.AnswerId,
-                remainingRatio);
-
-            return Ok(new { isCorrect = correct });
-        }
-
-        [HttpPost("{id:guid}/timeout")]
-        public async Task<IActionResult> Timeout(
-            Guid id,
-            [FromQuery] string playerId)
-        {
-            await _service.HandleTimeoutAsync(playerId, id);
-            return Ok();
-        }
-
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> Create(
-            [FromBody] CreateQuestionRequest request)
+        public async Task<IActionResult> Create([FromBody] CreateQuestionRequest request)
         {
             try
             {
                 var question = await _service.CreateQuestionAsync(request);
-
-                var questionDto = new QuestionDto
-                {
-                    Id = question.Id,
-                    Text = question.Text,
-                    Answers = question.Answers.Select(a => new AnswerDto 
-                    { 
-                        Id = a.Id, 
-                        Text = a.Text 
-                    }).ToList()
-                };
-
-                return CreatedAtAction(
-                    nameof(GetByPlanet), 
-                    new { planet = question.PlanetName }, 
-                    questionDto);
+                return Ok(MapToDto(question));
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateQuestionRequest request)
+        {
+            try
+            {
+                var question = await _service.UpdateQuestionAsync(id, request);
+                return Ok(MapToDto(question));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            await _service.DeleteQuestionAsync(id);
+            return NoContent();
+        }
+
+        private static QuestionDto MapToDto(Question q)
+        {
+            return new QuestionDto
+            {
+                Id = q.Id,
+                Text = q.Text,
+                CorrectAnswerId = q.CorrectAnswerId,
+                Answers = q.Answers.Select(a => new AnswerDto 
+                { 
+                    Id = a.Id, 
+                    Text = a.Text 
+                }).ToList()
+            };
         }
     }
 }

@@ -8,6 +8,7 @@ export interface AnswerDto {
 export interface QuestionDto {
   id: string;
   text: string;
+  correctAnswerId: string;
   answers: AnswerDto[];
 }
 
@@ -26,14 +27,14 @@ export interface CreateQuestionRequest {
     correctAnswerIndex: number;
 }
 
-export const getQuestionsByPlanet = async (planet: string, count: number = 5): Promise<QuestionDto[]> => {
+export const getQuestionsByPlanet = async (planet: string, count: number = 5, playerId: string = "0"): Promise<QuestionDto[]> => {
   const response = await api.get<QuestionDto[]>(`/api/questions?planet=${planet}&count=${count}`);
   return response.data;
 };
 
-export const submitAnswer = async (questionId: string, playerId: number, remainingRatio: number, answerId: string): Promise<{ isCorrect: boolean }> => {
-  const response = await api.post<{ isCorrect: boolean }>(
-    `/api/questions/${questionId}/answer?playerId=${playerId}&remainingRatio=${remainingRatio}`,
+export const submitAnswer = async (questionId: string, playerId: string, remainingRatio: number, answerId: string): Promise<{ correct: boolean }> => {
+  const response = await api.post<{ correct: boolean }>(
+    `/api/quiz/questions/${questionId}/answer?playerId=${playerId}&remainingRatio=${remainingRatio}`,
     { answerId }
   );
   return response.data;
@@ -42,4 +43,13 @@ export const submitAnswer = async (questionId: string, playerId: number, remaini
 export const createQuestion = async (data: CreateQuestionRequest) => {
     const response = await api.post("/api/questions", data);
     return response.data;
+};
+
+export const updateQuestion = async (id: string, data: CreateQuestionRequest) => {
+    const response = await api.put(`/api/questions/${id}`, data);
+    return response.data;
+};
+
+export const deleteQuestion = async (id: string) => {
+    await api.delete(`/api/questions/${id}`);
 };
