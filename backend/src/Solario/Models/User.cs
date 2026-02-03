@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Solario.Models
 {
+    [BsonIgnoreExtraElements]
     public class User
     {
         [BsonId]
@@ -21,23 +22,43 @@ namespace Solario.Models
         [BsonElement("role")]
         public string Role { get; set; } = "User";
 
-        [BsonElement("level")]
-        public int Level { get; set; } = 1;
-        
-        [BsonElement("credits")]
-        public int Credits { get; set; } = 0;
-
-        [BsonElement("quizzesCompleted")]
-        public int QuizzesCompleted { get; set; } = 0;
+        // =============================
+        // GAME STATS
+        // =============================
 
         [BsonElement("wins")]
         public int Wins { get; set; } = 0;
 
-        [BsonElement("conqueredPlanets")]
-        public string[] ConqueredPlanets { get; set; } = Array.Empty<string>();
-        
+        [BsonElement("totalScore")]
+        public int TotalScore { get; set; } = 0;
+
+        [BsonElement("questionsAnswered")]
+        public int QuestionsAnswered { get; set; } = 0;
+
+        [BsonElement("correctAnswers")]
+        public int CorrectAnswers { get; set; } = 0;
+
+        [BsonElement("distanceTraveled")]
+        public int DistanceTraveled { get; set; } = 0;
+
+        [BsonElement("quizzesCompleted")]
+        public int QuizzesCompleted { get; set; } = 0;
+
+        [BsonElement("planetsVisited")]
+        public List<string> PlanetsVisited { get; set; } = new();
+
+        // =============================
+        // META / INVENTORY
+        // =============================
+
+        [BsonElement("level")]
+        public int Level { get; set; } = 1;
+
+        [BsonElement("credits")]
+        public int Credits { get; set; } = 0;
+
         [BsonElement("inventory")]
-        public List<string> Inventory { get; set; } = new List<string>();
+        public List<string> Inventory { get; set; } = new();
 
         [BsonElement("equippedSkin")]
         public string EquippedSkin { get; set; } = "default";

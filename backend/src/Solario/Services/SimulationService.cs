@@ -1,37 +1,47 @@
 namespace Solario.Services;
 
 using Solario.Abstractions;
-using System.Text.Json;
+using Solario.Dto;
 using Solario.Models;
 using Microsoft.Extensions.Logging;
-using Solario.Repository;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 public class SimulationService
 {
     private readonly ILogger<SimulationService> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
+
     private readonly object _lock = new();
     private readonly List<Planet> _planets = new();
     private readonly Dictionary<string, Player> _players = new();
-    
     private readonly Dictionary<string, string> _playerSkins = new();
-
-    public SimulationService(ILogger<SimulationService> logger, IServiceScopeFactory scopeFactory)
-    {
-        _logger = logger;
-        _scopeFactory = scopeFactory;
-    }
 
     private Thread? _thread;
     private bool _running = false;
-    private float _dt = 1f / 30f;
+    private readonly float _dt = 1f / 30f;
 
     public float SimSpeed { get; set; } = 1.0f;
     public float OrbitScale { get; set; } = 1.0f;
     public float PlanetScale { get; set; } = 1.0f;
 
-    public void InitPlanet(string name, float orbitDiameter, float yearLength, float dayLength, float planetDiameter)
+    public SimulationService(
+        ILogger<SimulationService> logger,
+        IServiceScopeFactory scopeFactory)
+    {
+        _logger = logger;
+        _scopeFactory = scopeFactory;
+    }
+
+    // =============================
+    // PLANETS
+    // =============================
+    public void InitPlanet(
+        string name,
+        float orbitDiameter,
+        float yearLength,
+        float dayLength,
+        float planetDiameter)
     {
         lock (_lock)
         {
@@ -53,7 +63,17 @@ public class SimulationService
         }
     }
 
-    public void InitPlayer(string id, float x, float y, float z, float rotation, float speed, string skin = "default")
+    // =============================
+    // PLAYERS
+    // =============================
+    public void InitPlayer(
+        string id,
+        float x,
+        float y,
+        float z,
+        float rotation,
+        float speed,
+        string skin = "default")
     {
         lock (_lock)
         {
@@ -92,7 +112,7 @@ public class SimulationService
     {
         lock (_lock)
         {
-            if (_players.TryGetValue(id, out var existing))
+            if (_players.TryGetValue(id, out var player))
             {
                 _players[id] = new Player(
                     id, 
@@ -108,71 +128,120 @@ public class SimulationService
         }
     }
 
-    public async Task RemovePlayerAsync(string id)
+    public Player? GetPlayer(string playerId)
     {
-        Player? playerToRemove = null;
+        lock (_lock)
+        {
+            _players.TryGetValue(playerId, out var player);
+            return player;
+        }
+    }
+
+    // =============================
+    // INPUT / QUIZ
+    // =============================
+    public void ApplyPlayerInput(string playerId, PlayerInput input)
+    {
+        lock (_lock)
+        {
+            if (!_players.TryGetValue(playerId, out var player))
+                return;
+
+            player.SetTurnLeft(input.Keys.Left);
+            player.SetTurnRight(input.Keys.Right);
+            player.SetMoveForward(input.Keys.Forward);
+            player.SetMoveBackward(input.Keys.Backward);
+            player.SetTurbo(input.Keys.Turbo);
+        }
+    }
+
+    public bool EnterQuiz(string playerId, string planetName)
+    {
+        lock (_lock)
+        {
+            if (!_players.TryGetValue(playerId, out var player))
+                return false;
+
+            player.EnterOrbit(planetName);
+            return true;
+        }
+    }
+
+    public bool LeaveQuiz(string playerId)
+    {
+        lock (_lock)
+        {
+            if (!_players.TryGetValue(playerId, out var player))
+                return false;
+
+            player.LeaveOrbit();
+            return true;
+        }
+    }
+
+    // =============================
+    // REMOVE PLAYER + SAVE STATS
+    // =============================
+    public async Task RemovePlayerAsync(string playerId)
+    {
+        Player? player;
 
         lock (_lock)
         {
-            if (_players.TryGetValue(id, out var player))
-            {
-                playerToRemove = player;
-                _players.Remove(id);
-            }
-            _playerSkins.Remove(id);
+            if (!_players.TryGetValue(playerId, out player))
+                return;
+
+            _players.Remove(playerId);
+            _playerSkins.Remove(playerId);
         }
 
-        if (playerToRemove != null)
-        {
-            await SavePlayerProgress(playerToRemove);
-        }
+        await SavePlayerProgressAsync(player);
     }
 
-    private async Task SavePlayerProgress(Player player)
+    private async Task SavePlayerProgressAsync(Player player)
     {
-        if (player.Id == "0") return;
+        if (string.IsNullOrWhiteSpace(player.Id))
+            return;
 
-        try 
+        try
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var stats = scope.ServiceProvider.GetRequiredService<UserStatsService>();
+
+            var delta = new UserStatsDeltaDto
             {
-                var userRepo = scope.ServiceProvider.GetRequiredService<UserRepository>();
-                var user = await userRepo.GetByIdAsync(player.Id);
+                TotalScoreDelta = player.Points,
+                QuestionsAnsweredDelta = player.QuestionsAnswered,
+                CorrectAnswersDelta = player.CorrectAnswers,
+                DistanceTraveledDelta = (int)player.DistanceTraveled,
+                QuizzesCompletedDelta = player.QuestionsAnswered > 0 ? 1 : 0,
+                NewVisitedPlanets = player.VisitedPlanets.ToList()
+            };
 
-                if (user != null)
-                {
-                    user.Credits += player.Points;
-                    user.QuizzesCompleted += player.QuestionsAnswered > 0 ? 1 : 0;
-                    user.Level += player.Points / 1000; 
+            await stats.ApplyDeltaAsync(player.Id, delta);
 
-                    var currentPlanets = user.ConqueredPlanets.ToList();
-                    foreach(var p in player.VisitedPlanets)
-                    {
-                        if (!currentPlanets.Contains(p))
-                        {
-                            currentPlanets.Add(p);
-                        }
-                    }
-                    user.ConqueredPlanets = currentPlanets.ToArray();
-
-                    await userRepo.UpdateAsync(player.Id, user);
-                    _logger.LogInformation($"Saved progress for user {player.Id}. Earned {player.Points} credits.");
-                }
-            }
+            _logger.LogInformation(
+                "Player {PlayerId} stats flushed (+{Score} pts)",
+                player.Id,
+                player.Points
+            );
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Failed to save progress for user {player.Id}");
+            _logger.LogError(ex, "Failed to save stats for player {PlayerId}", player.Id);
         }
     }
 
+    // =============================
+    // STATE JSON
+    // =============================
     public string GetFullStateJson(string selfPlayerId)
     {
         lock (_lock)
         {
             var self = _players.TryGetValue(selfPlayerId, out var sp) ? sp : null;
 
-            var jsonObj = new
+            var json = new
             {
                 type = "state",
                 self = self == null ? null : new
@@ -194,74 +263,27 @@ public class SimulationService
                         z = p.PosZ,
                         rot = p.Rotation,
                         skin = p.Skin
-                    }).ToList(),
+                    }),
                 bodies = _planets.Select(p => new
                 {
                     name = p.Name,
                     x = p.PosX,
-                    z = p.PosZ,
-                    y = 0
-                }).ToList()
+                    z = p.PosZ
+                })
             };
 
-            return JsonSerializer.Serialize(jsonObj, new JsonSerializerOptions { WriteIndented = false });
+            return JsonSerializer.Serialize(json);
         }
     }
 
-    public void ApplyPlayerInput(string playerId, PlayerInput input)
-    {
-        lock (_lock)
-        {
-            if (_players.TryGetValue(playerId, out var player))
-            {
-                player.SetTurnLeft(input.Keys.Left);
-                player.SetTurnRight(input.Keys.Right);
-                player.SetMoveForward(input.Keys.Forward);
-                player.SetMoveBackward(input.Keys.Backward);
-                player.SetTurbo(input.Keys.Turbo);
-            }
-        }
-    }
-
-    public bool EnterQuiz(string playerId, string planetName)
-    {
-        lock (_lock)
-        {
-            if (_players.TryGetValue(playerId, out var player))
-            {
-                player.EnterOrbit(planetName);
-                return true;
-            }
-            return false;
-        }
-    }
-
-    public bool LeaveQuiz(string playerId)
-    {
-        lock (_lock)
-        {
-            if (_players.TryGetValue(playerId, out var player))
-            {
-                player.LeaveOrbit();
-                return true;
-            }
-            return false;
-        }
-    }
-
-    public Player? GetPlayer(string playerId)
-    {
-        lock (_lock)
-        {
-            _players.TryGetValue(playerId, out var player);
-            return player;
-        }
-    }
-
+    // =============================
+    // SIMULATION LOOP
+    // =============================
     public void Start()
     {
         if (_running) return;
         _running = true;
+
         _thread = new Thread(RunLoop) { IsBackground = true };
         _thread.Start();
     }
@@ -288,7 +310,8 @@ public class SimulationService
 
                     foreach (var player in _players.Values)
                     {
-                        if (player.State == PlayerState.Quiz && player.Orbit == planet.Name)
+                        if (player.State == PlayerState.Quiz &&
+                            player.Orbit == planet.Name)
                         {
                             player.ApplyOrbitMovement(dx, dz);
                         }
@@ -298,6 +321,7 @@ public class SimulationService
                 foreach (var player in _players.Values)
                     player.PerformMovement(_dt * SimSpeed);
             }
+
             Thread.Sleep((int)(_dt * 1000));
         }
     }
