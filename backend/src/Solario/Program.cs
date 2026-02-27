@@ -10,7 +10,7 @@ using Solario.Websockets;
 using Serilog;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +64,8 @@ builder.Services.AddDbContext<PostgresContext>(options =>
 
 builder.Services.AddScoped<QuestionRepository>();
 builder.Services.AddScoped<QuestionService>();
+builder.Services.AddScoped<QuizService>();
+builder.Services.AddScoped<UserStatsService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrEmpty(jwtKey))
@@ -120,11 +122,22 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Wpisz token JWT (bez 'Bearer ')"
     });
 
-    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
-        [new OpenApiSecuritySchemeReference(JwtBearerDefaults.AuthenticationScheme, document)] = []
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = JwtBearerDefaults.AuthenticationScheme
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
+
 builder.Services.AddSingleton<SimulationService>();
 builder.Services.AddSingleton<SimulationWebSocketHandler>();
 
@@ -184,8 +197,6 @@ simulation.InitPlanet("Jupiter", 8365f, 4332.59f, 9.9f, 1.398f);
 simulation.InitPlanet("Saturn", 14816f, 10759.22f, 10.7f, 1.164f);
 simulation.InitPlanet("Uranus", 29304f, 30687.15f, 17.2f, 0.507f);
 simulation.InitPlanet("Neptune", 45530f, 60190.03f, 16.1f, 0.492f);
-
-simulation.InitPlayer("0", 0, 0, 0, 0, 1);
 
 simulation.Start();
 

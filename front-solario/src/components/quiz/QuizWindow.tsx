@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { getQuestionsByPlanet, submitAnswer, type QuestionDto } from "../../api/quiz";
+import { useUser } from "../../context/UserContext";
 
 interface QuizWindowProps {
   planetName: string;
   onClose: () => void;
-  onExitOrbit: () => void; // Nowy prop
+  onExitOrbit: () => void;
 }
 
 export default function QuizWindow({ planetName, onClose, onExitOrbit }: QuizWindowProps) {
@@ -16,6 +17,9 @@ export default function QuizWindow({ planetName, onClose, onExitOrbit }: QuizWin
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
 
+  const { user } = useUser();
+  const playerId = user?.id || "0";
+
   const TIME_PER_QUESTION = 10000;
   const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
   const [timerActive, setTimerActive] = useState(false);
@@ -23,17 +27,17 @@ export default function QuizWindow({ planetName, onClose, onExitOrbit }: QuizWin
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const data = await getQuestionsByPlanet(planetName, 5);
+        const data = await getQuestionsByPlanet(planetName, 5, playerId);
         setQuestions(data);
         setLoading(false);
         setTimerActive(true);
       } catch (err) {
-        console.error("Failed to load questions", err);
+        console.error(err);
         setLoading(false);
       }
     };
     fetchQuestions();
-  }, [planetName]);
+  }, [planetName, playerId]);
 
   useEffect(() => {
     if (!timerActive || isFinished) return;
@@ -64,9 +68,9 @@ export default function QuizWindow({ planetName, onClose, onExitOrbit }: QuizWin
 
     const ratio = Math.max(0, timeLeft / TIME_PER_QUESTION);
     try {
-        const result = await submitAnswer(questions[currentIndex].id, 0, ratio, answerId);
+        const result = await submitAnswer(questions[currentIndex].id, playerId, ratio, answerId);
         
-        if (result.isCorrect) {
+        if (result.correct) {
             setScore((prev) => prev + 100 + Math.round(ratio * 100));
             setResultMessage("CORRECT!");
         } else {
@@ -137,7 +141,13 @@ export default function QuizWindow({ planetName, onClose, onExitOrbit }: QuizWin
           {currentQ.answers.map((ans) => {
             let btnClass = "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 hover:bg-[var(--color-primary)]/20 text-[var(--color-primary)]";
             if (selectedAnswer === ans.id) {
-                btnClass = resultMessage === "CORRECT!" ? "bg-green-500/20 border-green-500 text-green-300" : "bg-red-500/20 border-red-500 text-red-300";
+                if (resultMessage === "CORRECT!") {
+                    btnClass = "bg-green-500/20 border-green-500 text-green-300";
+                } else if (resultMessage === "WRONG!") {
+                    btnClass = "bg-red-500/20 border-red-500 text-red-300";
+                } else {
+                    btnClass = "bg-yellow-500/20 border-yellow-500 text-yellow-300";
+                }
             }
 
             return (

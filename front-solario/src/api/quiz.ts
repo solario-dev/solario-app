@@ -14,6 +14,7 @@ export interface QuestionDto {
 
 export interface AnswerRequest {
   answerId: string;
+  remainingRatio: number;
 }
 
 export interface CreateAnswerDto {
@@ -34,8 +35,8 @@ export const getQuestionsByPlanet = async (planet: string, count: number = 5, pl
 
 export const submitAnswer = async (questionId: string, playerId: string, remainingRatio: number, answerId: string): Promise<{ correct: boolean }> => {
   const response = await api.post<{ correct: boolean }>(
-    `/api/quiz/questions/${questionId}/answer?playerId=${playerId}&remainingRatio=${remainingRatio}`,
-    { answerId }
+    `/api/quiz/questions/${questionId}/answer?playerId=${playerId}`,
+    { answerId, remainingRatio }
   );
   return response.data;
 };
