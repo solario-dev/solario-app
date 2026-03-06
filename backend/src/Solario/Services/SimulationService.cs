@@ -4,10 +4,8 @@ using Solario.Abstractions;
 using Solario.Dto;
 using Solario.Models;
 using Solario.Repository;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
 using System.Text.Json;
 
 public class SimulationService
@@ -36,9 +34,6 @@ public class SimulationService
         _scopeFactory = scopeFactory;
     }
 
-    // =============================
-    // PLANETS
-    // =============================
     public void InitPlanet(
         string name,
         float orbitDiameter,
@@ -66,9 +61,6 @@ public class SimulationService
         }
     }
 
-    // =============================
-    // PLAYERS
-    // =============================
     public void InitPlayer(
         string id,
         float x,
@@ -104,7 +96,6 @@ public class SimulationService
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<UserRepository>();
  
-
             var user = await repo.GetByIdAsync(playerId);
             if (user != null && !string.IsNullOrWhiteSpace(user.EquippedSkin))
             {
@@ -147,9 +138,6 @@ public class SimulationService
         }
     }
 
-    // =============================
-    // INPUT / QUIZ
-    // =============================
     public void ApplyPlayerInput(string playerId, PlayerInput input)
     {
         lock (_lock)
@@ -189,9 +177,6 @@ public class SimulationService
         }
     }
 
-    // =============================
-    // REMOVE PLAYER + SAVE STATS
-    // =============================
     public async Task RemovePlayerAsync(string playerId)
     {
         Player? player;
@@ -242,9 +227,6 @@ public class SimulationService
         }
     }
 
-    // =============================
-    // STATE JSON
-    // =============================
     public string GetFullStateJson(string selfPlayerId)
     {
         lock (_lock)
@@ -278,6 +260,7 @@ public class SimulationService
                 {
                     name = p.Name,
                     x = p.PosX,
+                    y = 0,
                     z = p.PosZ
                 })
             };
@@ -286,9 +269,6 @@ public class SimulationService
         }
     }
 
-    // =============================
-    // SIMULATION LOOP
-    // =============================
     public void Start()
     {
         if (_running) return;
