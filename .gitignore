@@ -129,3 +129,12 @@ backend/.idea/**
 
 # remove accidental moved gitignore copies
 backend/.gitignore
+
+[Tt]est[Rr]esults/
+coveragereport/
+coverage.cobertura.xml
+lcov.info
+
+# Vitest coverage
+coverage/
+coverage.json
