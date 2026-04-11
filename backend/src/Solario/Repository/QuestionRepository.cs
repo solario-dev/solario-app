@@ -38,8 +38,8 @@ namespace Solario.Repository
 
         public async Task AddAsync(Question question)
         {
-                _db.Questions.Add(question);
-                await _db.SaveChangesAsync();
+            _db.Questions.Add(question);
+            await _db.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Question question)
@@ -58,12 +58,16 @@ namespace Solario.Repository
             string planet,
             int count)
         {
-            return await _db.Questions
+            var questions = await _db.Questions
                 .Include(q => q.Answers)
                 .Where(q => q.PlanetName == planet)
-                .OrderBy(_ => Guid.NewGuid())
-                .Take(count)
                 .ToListAsync();
+
+            var rng = new Random();
+            return questions
+                .OrderBy(q => rng.Next())
+                .Take(count)
+                .ToList();
         }
     }
 }
