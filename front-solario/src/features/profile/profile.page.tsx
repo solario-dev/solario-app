@@ -61,7 +61,7 @@ export default function Profile() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-[var(--color-primary)] flex p-8 font-sans mt-16">
+    <main className="bg-black text-[var(--color-primary)] flex p-8 font-sans">
       <section className="flex-1 pr-10 border-r border-[var(--color-primary)]/30">
         <div className="flex items-center gap-8 mb-10">
           <div className="w-32 h-32 rounded-full border border-[var(--color-primary)] flex items-center justify-center text-4xl bg-[var(--color-primary)]/10 shadow-[0_0_20px_rgba(0,255,240,0.3)]">
@@ -124,7 +124,7 @@ export default function Profile() {
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <h2 className="text-xl font-semibold mb-3 tracking-wide border-b border-[var(--color-primary)]/20 pb-2">
             QUIZZES RESULTS
           </h2>
@@ -137,7 +137,7 @@ export default function Profile() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </div> */}
       </section>
 
       <section className="w-1/3 pl-10">

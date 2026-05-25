@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom"
-import { useGameState } from "../../game/hooks/useGameState"
+import { useGameStore } from "../../../shared/store";
 
 export default function JoinGame() {
     const navigate = useNavigate();
-    const { startGame, startTraining } = useGameState();
+    const { startGame, startTraining } = useGameStore();
 
     function handleJoinGame(event: React.FormEvent) {
         event.preventDefault();
         startGame();
-        navigate("/training");
+        navigate("/game");
         // Dodatkowa logika do dołączenia do gry może być dodana tutaj
     }
 

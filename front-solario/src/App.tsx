@@ -9,15 +9,20 @@ import LoginPage from './features/auth/login.page.tsx'
 import RegisterPage from './features/auth/register.page.tsx'
 import AdminPage from './features/admin/AdminPage.tsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import Game from './features/game/game.page.tsx'
+import ResultsModal from './features/results/ResultsModal.tsx'
 
 const Layout = () => {
+  const location = useLocation();
+  const isScrollable = location.pathname === "/shop" || location.pathname === "/admin";
 
   return (
     <>
       <Navbar />
-      <div className="pt-[73px]">
+      <div className={`pt-[73px] ${isScrollable ? "h-full overflow-y-auto" : "h-full overflow-hidden"}`}>
         <Outlet />
       </div>
+      <ResultsModal />
     </>
   );
 };
@@ -34,6 +39,7 @@ const router = createBrowserRouter([
       { path: "/shop", element: <Shop /> },
       { path: "/admin", element: <AdminPage /> },
       { path: "/training", element: <Training /> },
+      { path: "/game", element: <Game /> },
       { path: "*", element: <h2>404 Nie znaleziono strony</h2> },
     ],
   },

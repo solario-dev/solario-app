@@ -1,25 +1,44 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import Saldo from "./components/Saldo";
-import { useGameState } from "../game/hooks/useGameState";
+import { useGameStore } from "../../shared/store";
 import { useAuthStore } from "../../shared/store/authStore";
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
-  const { state, quitTraining } = useGameState();
+  const { state, quitTraining, quitGame, setShowResults } = useGameStore();
   const { logout, user } = useAuthStore();
   const navigate = useNavigate();
 
   const isAuthenticated = user !== null;
 
   function handleQuit() {
+    const isExitingPlayMode = state === "training" || state === "game";
     quitTraining();
+    quitGame();
+    if (isExitingPlayMode) {
+      setShowResults(true);
+    }
     navigate("/dashboard");
   }
 
   function handleLogout() {
     logout();
-    navigate("/login");
+    navigate("/");
   }
+
+  const getLinkClass = (isActive: boolean, isAdmin = false) => {
+    const baseClass = "font-geist transition-all duration-300 relative py-1 px-1";
+    if (isAdmin) {
+      return `${baseClass} ${isActive
+        ? "text-[#FF365D] border-b-2 border-[#FF365D]"
+        : "text-[#FF365D]/80 hover:text-[#FF365D] hover:drop-shadow-[0_0_6px_#FF365D]"
+        }`;
+    }
+    return `${baseClass} ${isActive
+      ? "border-b-1 border-[var(--color-primary)]"
+      : "text-[var(--color-primary)]/80 hover:text-white hover:drop-shadow-[0_0_6px_var(--color-primary)]"
+      }`;
+  };
 
   return (
     <nav
@@ -33,7 +52,7 @@ export default function Navbar() {
       "
     >
       <Link
-        to="/dashboard"
+        to={isAuthenticated ? "/dashboard" : "/"}
         className="
           text-2xl font-orbit tracking-widest text-[var(--color-primary)]
           drop-shadow-[0_0_10px_var(--color-primary)]
@@ -48,7 +67,7 @@ export default function Navbar() {
       <div className="flex items-center space-x-8 text-lg">
         {isAuthenticated && <Saldo />}
 
-        {state === "training" && (
+        {(state === "training" || state === "game") && (
           <button
             onClick={handleQuit}
             className="
@@ -66,44 +85,40 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 {user?.role === "Admin" && (
-                  <Link
+                  <NavLink
                     to="/admin"
-                    className="
-                            text-[#FF365D] font-geist
-                            hover:text-white hover:drop-shadow-[0_0_6px_#FF365D]
-                            transition-all duration-300
-                        "
+                    className={({ isActive }) => getLinkClass(isActive, true)}
                   >
                     ADMIN PANEL
-                  </Link>
+                  </NavLink>
                 )}
 
-                <Link
+
+                <NavLink
+                  to="/dashboard"
+                  className={({ isActive }) => getLinkClass(isActive)}
+                >
+                  HOME
+                </NavLink>
+
+                <NavLink
                   to="/shop"
-                  className="
-                        text-[var(--color-primary)] font-geist
-                        hover:text-white hover:drop-shadow-[0_0_6px_var(--color-primary)]
-                        transition-all duration-300
-                    "
+                  className={({ isActive }) => getLinkClass(isActive)}
                 >
                   SHOP
-                </Link>
+                </NavLink>
 
-                <Link
+                <NavLink
                   to="/profile"
-                  className="
-                        text-[var(--color-primary)] font-geist
-                        hover:text-white hover:drop-shadow-[0_0_6px_var(--color-primary)]
-                        transition-all duration-300
-                    "
+                  className={({ isActive }) => getLinkClass(isActive)}
                 >
-                  PROFILE ({user?.username})
-                </Link>
+                  PROFILE
+                </NavLink>
 
                 <button
                   onClick={handleLogout}
                   className="
-                        text-[var(--color-primary)] font-geist
+                        text-[var(--color-primary)]/80 font-geist
                         hover:text-[#FF365D] hover:drop-shadow-[0_0_6px_#FF365D]
                         transition-all duration-300
                         uppercase
@@ -113,16 +128,12 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Link
+              <NavLink
                 to="/login"
-                className="
-                     text-[var(--color-primary)] font-geist
-                     hover:text-white hover:drop-shadow-[0_0_6px_var(--color-primary)]
-                     transition-all duration-300
-                 "
+                className={({ isActive }) => getLinkClass(isActive)}
               >
                 LOGIN
-              </Link>
+              </NavLink>
             )}
           </div>
         )}

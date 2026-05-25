@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useSimulationState } from "./useSimulationState";
+import { useSimStore } from "../../../shared/store";
 
 export function useSimulationSocket(url = "ws://localhost:5000/simulations/socket") {
   const ws = useRef<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
-  const { setState } = useSimulationState();
+  const { setState } = useSimStore();
 
   // Funkcja do otwierania połączenia
   const start = useCallback(() => {

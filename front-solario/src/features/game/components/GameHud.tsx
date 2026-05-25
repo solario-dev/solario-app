@@ -1,20 +1,22 @@
 import React from "react";
-import { useSimulationState } from "../hooks/useSimulationState";
+import { useSimStore } from "../../../shared/store/simStore";
 
 const GameHud = () => {
-  const { state } = useSimulationState();
+  const { state } = useSimStore();
 
   if (!state || !state.self) {
-    return <div>Ładowanie...</div>;
+    return <div>Loading...</div>;
   }
 
   return (
-    <div>
+    <div className="m-5">
       <h3>Players:</h3>
       <h2 className="font-bold">
-        {state.self.playerId}:({state.self.x}, {state.self.y}, {state.self.z}){state.self.rot}
+        me:({state.self.x}, {state.self.y}, {state.self.z})
       </h2>
-      
+
+      {state.others.length > 0 && <p>Others:</p>}
+
       <ul>
         {state.others?.map(p => (
           <li key={p.playerId}>

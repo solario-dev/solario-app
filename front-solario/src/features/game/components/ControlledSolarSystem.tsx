@@ -3,7 +3,7 @@ import { ThirdPersonCamera } from './game-objects/ThirdPersonCamera.tsx'
 import { PlayerShip } from './game-objects/PlayerShip.tsx'
 import { useRef, useState, useEffect } from 'react'
 import * as THREE from 'three'
-import { useSimulationState } from "../hooks/useSimulationState.tsx";
+import { useSimStore } from "../../../shared/store";
 import Sun from './game-objects/Sun.tsx'
 import Planet from './game-objects/Planet.tsx'
 import { LandingButton } from './LandingButton.tsx'
@@ -11,7 +11,7 @@ import planetsData from '../../../assets/planets.json'
 import { useSearchParams } from 'react-router-dom'
 
 export const ControlledSolarSystem: React.FC = () => {
-  const { state } = useSimulationState();
+  const { state } = useSimStore();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const shipRef = useRef<THREE.Group | null>(null);

@@ -28,7 +28,7 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center bg-[var(--color-bg-main)]">
       <div className="w-full max-w-md p-8 panel backdrop-blur-md">
         <h1 className="text-3xl font-orbit text-center mb-8 text-[var(--color-primary)] text-glow">
-          ACCESS TERMINAL
+          LOG IN
         </h1>
 
         {error && (
@@ -39,7 +39,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6 font-geist">
           <div>
-            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">EMAIL FREQUENCY</label>
+            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">EMAIL</label>
             <input
               type="email"
               value={email}
@@ -50,7 +50,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">SECURITY KEY</label>
+            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">PASSWORD</label>
             <input
               type="password"
               value={password}
@@ -64,7 +64,7 @@ export default function LoginPage() {
             type="submit"
             className="w-full btn-primary mt-4"
           >
-            INITIALIZE LINK
+            LOGIN
           </button>
         </form>
 

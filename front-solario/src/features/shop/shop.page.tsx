@@ -56,7 +56,7 @@ export default function Shop() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg-main)] text-[var(--color-primary)] font-geist pt-24 px-8 pb-10">
+    <main className="pt-16 px-8 pb-10">
       <div className="max-w-7xl mx-auto">
 
         <header className="flex justify-between items-end mb-8 border-b border-[var(--color-primary)]/30 pb-6">

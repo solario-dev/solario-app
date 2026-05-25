@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, useMemo } from "react";
-import { useSimulationState } from "../hooks/useSimulationState";
+import { useSimStore } from "../../../shared/store";
 import data from "../../../assets/planets.json";
 
 export const Minimap = () => {
-  const { state } = useSimulationState();
+  const { state } = useSimStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [scale, setScale] = useState(0.01); // domyślna skala
+  const [scale, setScale] = useState(0.09); // domyślna skala
 
   // wielkość minimapy
   const SIZE = 300;
@@ -52,13 +52,13 @@ export const Minimap = () => {
     sunGradient.addColorStop(1, "rgba(253, 184, 19, 0)");
     ctx.fillStyle = sunGradient;
     ctx.beginPath();
-    ctx.arc(SIZE / 2, SIZE / 2, 12, 0, Math.PI * 2);
+    ctx.arc(SIZE / 2, SIZE / 2, 400 * scale, 0, Math.PI * 2);
     ctx.fill();
 
     // Core słońca
     ctx.fillStyle = "#FFF5E1";
     ctx.beginPath();
-    ctx.arc(SIZE / 2, SIZE / 2, 5, 0, Math.PI * 2);
+    ctx.arc(SIZE / 2, SIZE / 2, 350 * scale, 0, Math.PI * 2);
     ctx.fill();
 
     // --- Orbity planet (cyjan) ---

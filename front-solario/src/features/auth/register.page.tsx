@@ -37,7 +37,7 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6 font-geist">
           <div>
-            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">CALLSIGN (USERNAME)</label>
+            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">USERNAME</label>
             <input
               type="text"
               value={username}
@@ -48,7 +48,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">EMAIL FREQUENCY</label>
+            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">EMAIL</label>
             <input
               type="email"
               value={email}
@@ -59,7 +59,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">SECURITY KEY</label>
+            <label className="block text-sm text-[var(--color-primary)]/70 mb-2">PASSWORD</label>
             <input
               type="password"
               value={password}
@@ -73,7 +73,7 @@ export default function RegisterPage() {
             type="submit"
             className="w-full btn-primary mt-4"
           >
-            CONFIRM REGISTRATION
+            REGISTER
           </button>
         </form>
 

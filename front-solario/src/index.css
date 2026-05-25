@@ -5,7 +5,7 @@
 
 /* 🚀 GALACTIC THEME */
 @theme {
-  --color-bg-main: oklch(13% 0.028 261.692);
+  --color-bg-main: black;
   --color-bg-panel: oklch(13% 0.028 261.692);
   --color-primary: #00FFF0;
   --color-accent: #00B8D9;
