@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { useUser } from "../../app/providers/UserContext";
+import { useAuthStore } from "../../shared/store/authStore";
 import { Navigate } from "react-router-dom";
 import { getShopItems } from "../shop/api/shop";
 import { equipSkin } from "./api/profile";
@@ -27,30 +27,33 @@ const allPlanets = [
   { name: "Neptune", colorBase: "bg-blue-600" },
 ];
 
+import { useQuery, useMutation } from "@tanstack/react-query";
+
 export default function Profile() {
-  const { user, login, token, isAuthenticated } = useUser();
-  const [shopItems, setShopItems] = useState<ShopItem[]>([]);
+  const { user, login, token, isAuthenticated } = useAuthStore();
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const items = await getShopItems();
-        setShopItems(items);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    fetchItems();
-  }, []);
+  const { data: shopItems = [] } = useQuery<ShopItem[]>({
+    queryKey: ["shopItems"],
+    queryFn: getShopItems,
+    enabled: isAuthenticated && !!user,
+  });
 
-  const handleEquip = async (itemId: string) => {
-    if (!user || !token) return;
-    try {
-      await equipSkin(user.id, itemId);
+  const equipMutation = useMutation({
+    mutationFn: (itemId: string) => {
+      if (!user) throw new Error("No user logged in");
+      return equipSkin(user.id, itemId);
+    },
+    onSuccess: (data, itemId) => {
+      if (!user || !token) return;
       login({ ...user, equippedSkin: itemId }, token);
-    } catch (err) {
+    },
+    onError: (err) => {
       console.error("Failed to equip", err);
     }
+  });
+
+  const handleEquip = (itemId: string) => {
+    equipMutation.mutate(itemId);
   };
 
   if (!isAuthenticated || !user) {

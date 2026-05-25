@@ -1,8 +1,16 @@
 import JoinGame from "./components/JoinGame.tsx";
 import { SolarSystem } from "./components/dashboard-system/SolarSystem.tsx"
 import planetsData from "../../assets/planets.json";
+import { useAuthStore } from "../../shared/store/authStore.ts";
+import { Navigate } from "react-router-dom";
 
 export default function Dashboard() {
+
+  const { user } = useAuthStore();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   const menuItems: string[] = planetsData.celestialBodies
     .filter((p) => p.type === "planet" || p.type === "star")

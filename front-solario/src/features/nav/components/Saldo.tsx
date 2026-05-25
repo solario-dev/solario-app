@@ -1,7 +1,7 @@
-import { useUser } from "../../../app/providers/UserContext";
+import { useAuthStore } from "../../../shared/store/authStore";
 
 export default function Saldo() {
-  const { user } = useUser();
+  const { user } = useAuthStore();
 
   return (
     <div className="flex gap-2 justify-center items-center font-geist bg-[var(--color-primary)]/10 px-3 py-1 rounded border border-[var(--color-primary)]/30">

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { getQuestionsByPlanet, submitAnswer, type QuestionDto } from "./api/quiz";
-import { useUser } from "../../app/providers/UserContext";
+import { submitAnswer } from "./api/quiz";
+import type { QuestionDto } from "./types/quiz.types";
+import { useAuthStore } from "../../shared/store";
+import { getQuestionsByPlanet } from "../admin/api/questions";
 
 interface QuizWindowProps {
   planetName: string;
@@ -17,7 +19,7 @@ export default function QuizWindow({ planetName, onClose, onExitOrbit }: QuizWin
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
 
-  const { user } = useUser();
+  const { user } = useAuthStore();
   const playerId = user?.id || "0";
 
   const TIME_PER_QUESTION = 10000;

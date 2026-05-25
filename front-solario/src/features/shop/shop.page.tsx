@@ -1,56 +1,51 @@
-import { useEffect, useState } from "react";
-import { useUser } from "../../app/providers/UserContext";
+import { useState } from "react";
+import { useAuthStore } from "../../shared/store/authStore";
 import { getShopItems, purchaseItem } from "./api/shop";
 import type { ShopItem } from "../../shared/types/ShopItem";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Shop() {
-  const { user, login, token } = useUser();
-  const [items, setItems] = useState<ShopItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, login, token } = useAuthStore();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'passport' | 'skin'>('passport');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  useEffect(() => {
-    loadItems();
-  }, []);
+  const { data: items = [], isLoading } = useQuery<ShopItem[]>({
+    queryKey: ["shopItems"],
+    queryFn: getShopItems,
+  });
 
-  const loadItems = async () => {
-    try {
-      const data = await getShopItems();
-      setItems(data);
-    } catch (error) {
-      console.error("Failed to load shop items", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBuy = async (item: ShopItem) => {
-    if (!user || !token) return;
-
-    try {
-      await purchaseItem(user.id, item.id);
-
+  const buyMutation = useMutation({
+    mutationFn: (item: ShopItem) => {
+      if (!user) throw new Error("No user logged in");
+      return purchaseItem(user.id, item.id);
+    },
+    onSuccess: (data, item) => {
+      if (!user || !token) return;
       const updatedUser = {
         ...user,
         credits: user.credits - item.price,
         inventory: [...user.inventory, item.id]
       };
-
       login(updatedUser, token);
-
       setMessage({ text: `Successfully purchased ${item.name}!`, type: 'success' });
       setTimeout(() => setMessage(null), 3000);
-    } catch (error: any) {
+      queryClient.invalidateQueries({ queryKey: ["shopItems"] });
+    },
+    onError: (error: any) => {
       const errorMsg = error.response?.data?.message || "Purchase failed";
       setMessage({ text: errorMsg, type: 'error' });
       setTimeout(() => setMessage(null), 3000);
     }
+  });
+
+  const handleBuy = (item: ShopItem) => {
+    buyMutation.mutate(item);
   };
 
   const filteredItems = items.filter(item => item.type === activeTab);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <main className="min-h-screen bg-[var(--color-bg-main)] flex items-center justify-center pt-20">
         <div className="text-[var(--color-primary)] font-orbit text-xl animate-pulse">

@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUser } from "./api/auth";
-import { useUser } from "../../app/providers/UserContext";
+import { useAuthStore } from "../../shared/store/authStore";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

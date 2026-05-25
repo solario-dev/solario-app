@@ -12,6 +12,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error("API Error:", error);
+    if (error.response?.status === 401 && error.config && !error.config.url?.includes("/users/login")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
     return Promise.reject(error);
   }
 );

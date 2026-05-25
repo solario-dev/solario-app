@@ -6,17 +6,21 @@ import GameHud from "../game/components/GameHud";
 import { Minimap } from "../game/components/Minimap";
 import { Planet3DView } from "../game/components/Planet3DView";
 import { PlanetInfoPanel } from "../game/components/PlanetInfoPanel";
-import { useSearchParams } from "react-router-dom";
-import QuizWindow from "../quiz/QuizWindow";
-import { useUser } from "../../app/providers/UserContext";
+import { useSearchParams, Navigate } from "react-router-dom";
+import QuizWindow from "../quiz/quiz.page";
+import { useAuthStore } from "../../shared/store/authStore";
 
 export default function Training() {
   const [searchParams, setSearchParams] = useSearchParams();
   const planetName = searchParams.get('planet');
   const [isQuizActive, setIsQuizActive] = useState(false);
 
-  const { user } = useUser();
+  const { user } = useAuthStore();
   const playerId = user?.id || "0";
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   // FIX: Port 5001 dla WebSocketa
   const { connected, stop, ws } = useSimulationSocket("ws://localhost:5001/simulations/socket");

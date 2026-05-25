@@ -1,13 +1,15 @@
 import { Link } from "react-router-dom";
 import Saldo from "./components/Saldo";
 import { useGameState } from "../game/hooks/useGameState";
-import { useUser } from "../../app/providers/UserContext";
+import { useAuthStore } from "../../shared/store/authStore";
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const { state, quitTraining } = useGameState();
-  const { isAuthenticated, logout, user } = useUser();
+  const { logout, user } = useAuthStore();
   const navigate = useNavigate();
+
+  const isAuthenticated = user !== null;
 
   function handleQuit() {
     quitTraining();

@@ -1,6 +1,7 @@
 import api from "../../../shared/lib/client";
 import type { Game } from "../../../shared/types/Game";
 
+//zwraca tablice planet, do testów tylko
 // GET /simulations/state
 export const getGames = async (): Promise<Game[]> => {
   const res = await api.get<Game[]>("/simulations/state");

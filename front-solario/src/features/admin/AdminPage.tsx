@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { createQuestion, updateQuestion, deleteQuestion, getQuestionsByPlanet } from "./api/questions";
 import type { QuestionDto } from "../quiz/types/quiz.types";
-import { useUser } from "../../app/providers/UserContext";
+import { useAuthStore } from "../../shared/store/authStore";
 import { Navigate } from "react-router-dom";
 import planetsData from "../../assets/planets.json";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 export default function AdminPage() {
-    const { user, isAuthenticated } = useUser();
+    const { user, isAuthenticated } = useAuthStore();
+    const queryClient = useQueryClient();
 
     const [selectedPlanet, setSelectedPlanet] = useState(planetsData.celestialBodies[0].name.toLowerCase());
-    const [questions, setQuestions] = useState<QuestionDto[]>([]);
-    const [loading, setLoading] = useState(false);
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [text, setText] = useState("");
@@ -18,23 +19,44 @@ export default function AdminPage() {
     const [correctIndex, setCorrectIndex] = useState(0);
     const [status, setStatus] = useState("");
 
-    useEffect(() => {
-        if (isAuthenticated && user?.role === "Admin") {
-            fetchQuestions();
-        }
-    }, [selectedPlanet, isAuthenticated]);
+    const { data: questions = [], isLoading: loading } = useQuery<QuestionDto[]>({
+        queryKey: ["questions", selectedPlanet],
+        queryFn: () => getQuestionsByPlanet(selectedPlanet, 100),
+        enabled: isAuthenticated && user?.role === "Admin",
+    });
 
-    const fetchQuestions = async () => {
-        setLoading(true);
-        try {
-            const data = await getQuestionsByPlanet(selectedPlanet, 100);
-            setQuestions(data);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const createMutation = useMutation({
+        mutationFn: createQuestion,
+        onSuccess: () => {
+            setStatus("Success! Question added.");
+            setText("");
+            setAnswers(["", "", "", ""]);
+            setEditingId(null);
+            queryClient.invalidateQueries({ queryKey: ["questions", selectedPlanet] });
+        },
+        onError: () => setStatus("Error adding question.")
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: any }) => updateQuestion(id, payload),
+        onSuccess: () => {
+            setStatus("Success! Question updated.");
+            setText("");
+            setAnswers(["", "", "", ""]);
+            setEditingId(null);
+            queryClient.invalidateQueries({ queryKey: ["questions", selectedPlanet] });
+        },
+        onError: () => setStatus("Error updating question.")
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: deleteQuestion,
+        onSuccess: () => {
+            setStatus("Question deleted.");
+            queryClient.invalidateQueries({ queryKey: ["questions", selectedPlanet] });
+        },
+        onError: () => setStatus("Error deleting question.")
+    });
 
     if (!isAuthenticated || user?.role !== "Admin") {
         return <Navigate to="/dashboard" replace />;
@@ -75,14 +97,7 @@ export default function AdminPage() {
 
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this question?")) return;
-
-        try {
-            await deleteQuestion(id);
-            setQuestions(prev => prev.filter(q => q.id !== id));
-            setStatus("Question deleted.");
-        } catch (e) {
-            setStatus("Error deleting question.");
-        }
+        deleteMutation.mutate(id);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -96,22 +111,10 @@ export default function AdminPage() {
             correctAnswerIndex: correctIndex
         };
 
-        try {
-            if (editingId) {
-                await updateQuestion(editingId, payload);
-                setStatus("Success! Question updated.");
-            } else {
-                await createQuestion(payload);
-                setStatus("Success! Question added.");
-            }
-
-            setText("");
-            setAnswers(["", "", "", ""]);
-            setEditingId(null);
-            fetchQuestions();
-        } catch (err) {
-            console.error(err);
-            setStatus("Error saving question.");
+        if (editingId) {
+            updateMutation.mutate({ id: editingId, payload });
+        } else {
+            createMutation.mutate(payload);
         }
     };
 

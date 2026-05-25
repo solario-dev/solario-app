@@ -1,26 +1,26 @@
-import './App.css'
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
-import Dashboard from './features/dashboard/Dashboard.tsx'
-import Profile from './features/profile/Profile.tsx'
-import Shop from './features/shop/Shop.tsx'
+import { createBrowserRouter, RouterProvider, Outlet, useLocation } from 'react-router-dom'
+import Dashboard from './features/dashboard/dashboard.page.tsx'
+import Profile from './features/profile/profile.page.tsx'
+import Shop from './features/shop/shop.page.tsx'
 import Navbar from './features/nav/Navbar.tsx'
-import LandingPage from './features/landing/LandingPage.tsx'
-import Training from './features/training/Training.tsx'
-import LoginPage from './features/auth/LoginPage.tsx'
-import RegisterPage from './features/auth/RegisterPage.tsx'
+import LandingPage from './features/landing/landing.page.tsx'
+import Training from './features/training/training.page.tsx'
+import LoginPage from './features/auth/login.page.tsx'
+import RegisterPage from './features/auth/register.page.tsx'
 import AdminPage from './features/admin/AdminPage.tsx'
-import { useEffect } from 'react'
-import { getGames } from './features/game/api/games.ts'
-import { GameStateProvider } from './app/providers/GameStateContext.tsx'
-import { SimulationStateProvider } from './app/providers/SimulationStateContext.tsx'
-import { UserProvider } from './app/providers/UserContext.tsx'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-const Layout = () => (
-  <>
-    <Navbar />
-    <Outlet />
-  </>
-);
+const Layout = () => {
+
+  return (
+    <>
+      <Navbar />
+      <div className="pt-[73px]">
+        <Outlet />
+      </div>
+    </>
+  );
+};
 
 const router = createBrowserRouter([
   {
@@ -39,27 +39,19 @@ const router = createBrowserRouter([
   },
 ]);
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 export default function App() {
-
-  useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        await getGames();
-      } catch (error) {
-        console.log("Nie udało się pobrać gry.");
-      }
-    };
-
-    fetchGames();
-  }, []);
-
   return (
-    <UserProvider>
-      <GameStateProvider>
-        <SimulationStateProvider>
-          <RouterProvider router={router} />
-        </SimulationStateProvider>
-      </GameStateProvider>
-    </UserProvider>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   )
 }

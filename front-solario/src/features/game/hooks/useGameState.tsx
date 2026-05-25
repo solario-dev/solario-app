@@ -1,9 +1,5 @@
-import { useContext } from "react";
-import { GameStateContext } from "../../../app/providers/GameStateContext";
+import { useGameStore } from "../../../shared/store";
 
 export const useGameState = () => {
-  const context = useContext(GameStateContext);
-  if (!context)
-    throw new Error("useGame must be used within a GameProvider");
-  return context;
-};
+  return useGameStore();
+};
