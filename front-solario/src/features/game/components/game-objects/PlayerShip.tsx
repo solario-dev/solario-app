@@ -15,13 +15,15 @@ export const PlayerShip = forwardRef<THREE.Object3D, PlayerShipProps>(
 
     useImperativeHandle(ref, () => shipRef.current)
 
+    const targetPositionRef = useRef(new THREE.Vector3())
+
     useFrame((_, delta) => {
       if (!player || !shipRef.current) return
 
       const lerpFactor = Math.min(delta * 10, 1)
 
-      const targetPosition = new THREE.Vector3(player.x, player.y, player.z)
-      shipRef.current.position.lerp(targetPosition, lerpFactor)
+      targetPositionRef.current.set(player.x, player.y, player.z)
+      shipRef.current.position.lerp(targetPositionRef.current, lerpFactor)
 
       const currentRotation = shipRef.current.rotation.y
       const targetRotation = THREE.MathUtils.degToRad(player.rot)

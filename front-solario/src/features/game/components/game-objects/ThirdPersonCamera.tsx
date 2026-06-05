@@ -1,13 +1,18 @@
 import * as THREE from "three"
 import { useFrame } from "@react-three/fiber"
 
-export function ThirdPersonCamera({ playerRef }: { playerRef: React.RefObject<THREE.Object3D | null> }) {
-  const offset = new THREE.Vector3(0, 2, -5);       // pozycja kamery względem statku
-  const lookAhead = new THREE.Vector3(0, 2, 5);      // punkt patrzenia przed statkiem
+// Zoptymalizowane zmienne pomocnicze wielokrotnego użytku (brak alokacji pamięci w useFrame)
+const _offset = new THREE.Vector3(0, 2, -5)
+const _lookAhead = new THREE.Vector3(0, 2, 5)
+const _rotatedOffset = new THREE.Vector3()
+const _rotatedLookAhead = new THREE.Vector3()
+const _desiredPosition = new THREE.Vector3()
+const _targetPosition = new THREE.Vector3()
 
+export function ThirdPersonCamera({ playerRef }: { playerRef: React.RefObject<THREE.Object3D | null> }) {
   useFrame(({ camera }) => {
-    // Zwiększamy zasięg renderowania kamery
-    if (camera instanceof THREE.PerspectiveCamera) {
+    // ✅ Zasięg renderowania ustawiamy tylko raz, gdy się różni od docelowego
+    if (camera instanceof THREE.PerspectiveCamera && camera.far !== 10000) {
       camera.far = 10000;
       camera.updateProjectionMatrix();
     }
@@ -15,17 +20,17 @@ export function ThirdPersonCamera({ playerRef }: { playerRef: React.RefObject<TH
     const pr = playerRef?.current
     if (!pr) return
 
-    // obracamy offset zgodnie z rotacją statku
-    const rotatedOffset = offset.clone().applyQuaternion(pr.quaternion)
-    const rotatedLookAhead = lookAhead.clone().applyQuaternion(pr.quaternion)
+    // ✅ Brak metod .clone() -- używamy zmiennych pomocniczych i modyfikacji w miejscu
+    _rotatedOffset.copy(_offset).applyQuaternion(pr.quaternion)
+    _rotatedLookAhead.copy(_lookAhead).applyQuaternion(pr.quaternion)
 
-    // pozycja kamery
-    const desiredPosition = pr.position.clone().add(rotatedOffset)
-    camera.position.lerp(desiredPosition, 0.12)
+    // Pozycja kamery
+    _desiredPosition.copy(pr.position).add(_rotatedOffset)
+    camera.position.lerp(_desiredPosition, 0.12)
 
-    // patrzymy trochę przed statkiem
-    const targetPosition = pr.position.clone().add(rotatedLookAhead)
-    camera.lookAt(targetPosition)
+    // Patrzymy przed statek
+    _targetPosition.copy(pr.position).add(_rotatedLookAhead)
+    camera.lookAt(_targetPosition)
   })
 
   return null
