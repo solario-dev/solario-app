@@ -9,8 +9,8 @@ export const OrbitRing: React.FC<OrbitRingProps> = ({ distance, color }) => {
   const points: number[] = []
 
   // Tworzymy punkty orbity
-  for (let i = 0; i <= 64; i++) {
-    const angle = (i / 64) * Math.PI * 2
+  for (let i = 0; i <= 1024; i++) {
+    const angle = (i / 1024) * Math.PI * 2
     points.push(Math.cos(angle) * distance, 0, Math.sin(angle) * distance)
   }
 

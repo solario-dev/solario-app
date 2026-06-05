@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useLoader } from "@react-three/fiber";
 
 type SunProps = {
   position?: [number, number, number];
@@ -13,15 +13,16 @@ type SunProps = {
 const Sun: React.FC<SunProps> = ({
   position = [0, 0, 0],
   radius = 5,
-  color = "yellow",
+  color = "white",
   intensity = 5000,
   rotationSpeed = 0.001,
 }) => {
   const sunRef = useRef<THREE.Mesh>(null);
+  const sunTexture = useLoader(THREE.TextureLoader, "/textures/sun.jpg");
 
   useFrame(() => {
     if (sunRef.current) {
-      sunRef.current.rotation.y += rotationSpeed; // obrót dla efektu
+      sunRef.current.rotation.y += rotationSpeed;
     }
   });
 
@@ -29,11 +30,13 @@ const Sun: React.FC<SunProps> = ({
     <>
       {/* Samo słońce jako mesh */}
       <mesh ref={sunRef} position={position}>
-        <sphereGeometry args={[radius, 64, 64]} />
+        <sphereGeometry args={[radius, 32, 32]} />
         <meshStandardMaterial
-          emissive={new THREE.Color(color)}
+          map={sunTexture}
+          emissiveMap={sunTexture}
+          emissive={color}
           emissiveIntensity={1.5}
-          color={"black"}
+          color={"white"}
         />
       </mesh>
 
