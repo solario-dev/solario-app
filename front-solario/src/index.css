@@ -16,6 +16,29 @@
   --font-chivo: "Chivo", sans-serif;
 }
 
+.minimal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 255, 240, 0.3);
+  border-radius: 9999px;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 255, 240, 0.7);
+}
+
+/* Firefox */
+.minimal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 240, 0.1) transparent;
+}
+
 /* ✨ Globalne style bazowe */
 @layer base {
 

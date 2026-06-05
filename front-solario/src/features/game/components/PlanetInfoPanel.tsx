@@ -2,7 +2,7 @@ import planetsData from '../../../assets/planets.json'
 
 interface PlanetInfoPanelProps {
   planetName: string
-  onStartQuiz?: () => void // Dodajemy prop
+  onStartQuiz?: () => void
 }
 
 export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({ planetName, onStartQuiz }) => {
@@ -13,13 +13,23 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({ planetName, on
   const { radiusKm } = planetInfo
 
   return (
-    <div className="w-[340px] panel backdrop-blur-md p-6 font-geist text-[var(--color-primary)] ">
+    <div className="w-[340px] panel backdrop-blur-md p-6 font-geist text-[var(--color-primary)]">
       <h2 className="mb-6 text-base font-orbit border-b-2 border-[var(--color-primary)]/30 pb-3 text-glow tracking-wide uppercase">
         {planetName}
       </h2>
 
-      <InfoRow label="RADIUS" value={`${radiusKm.toLocaleString()} km`} />
-      <InfoRow label="TYPE" value="Planet" />
+      <div className="flex flex-col overflow-y-scroll minimal-scrollbar h-[19rem]">
+        <InfoRow label="RADIUS" value={`${radiusKm.toLocaleString()} km`} />
+        <InfoRow label="TYPE" value="Planet" />
+        <InfoRow label="DISTANCE FROM SUN" value={`${planetInfo.orbitDiameter} km`} />
+        <InfoRow label="MASS" value={`${planetInfo.mass}`} />
+        <InfoRow label="ORBITAL PERIOD" value={`${planetInfo.orbitalPeriod}`} />
+        <InfoRow label="ROTATIONAL PERIOD" value={`${planetInfo.rotationalPeriod}`} />
+        <InfoRow label="TEMPERATURE" value={`${planetInfo.temperature}`} />
+        <InfoRow label="ATMOSPHERE" value={planetInfo.atmosphere.join(', ')} />
+        <InfoRow label="MOONS" value={`${planetInfo.moons} `} />
+        <InfoRow label="RINGS" value={planetInfo.hasRings ? 'Yes' : 'No'} />
+      </div>
 
       {planetInfo.hasRings && (
         <InfoRow label="SPECIAL FEATURES" value="Ring System" />

@@ -7,7 +7,15 @@
       "color": "#D7B385",
       "texture": "/textures/mercury.jpg",
       "scale": 0.01,
-      "orbitDiameter": 1158
+      "orbitDiameter": 1158,
+      "mass": "3.3011×10^23 kg",
+      "orbitalPeriod": "88 Earth days",
+      "rotationalPeriod": "58.6 Earth days",
+      "temperature": "-173°C to 427°C",
+      "atmosphere": [
+        "None"
+      ],
+      "moons": 0
     },
     {
       "name": "Venus",
@@ -16,7 +24,16 @@
       "color": "#EDB95A",
       "texture": "/textures/venus.jpg",
       "scale": 0.01,
-      "orbitDiameter": 1661
+      "orbitDiameter": 1661,
+      "mass": "4.8675×10^24 kg",
+      "orbitalPeriod": "224.7 Earth days",
+      "rotationalPeriod": "243 Earth days",
+      "temperature": "462°C",
+      "atmosphere": [
+        "Carbon Dioxide",
+        "Nitrogen"
+      ],
+      "moons": 0
     },
     {
       "name": "Earth",
@@ -25,7 +42,17 @@
       "color": "#468CF3",
       "texture": "/textures/earth.jpg",
       "scale": 0.01,
-      "orbitDiameter": 2075
+      "orbitDiameter": 2075,
+      "mass": "5.972×10^24 kg",
+      "orbitalPeriod": "365.25 Earth days",
+      "rotationalPeriod": "23.9 hours",
+      "temperature": "-88°C to 58°C",
+      "atmosphere": [
+        "Nitrogen",
+        "Oxygen",
+        "Argon"
+      ],
+      "moons": 1
     },
     {
       "name": "Mars",
@@ -34,7 +61,17 @@
       "color": "#C73F18",
       "texture": "/textures/mars.jpg",
       "scale": 0.01,
-      "orbitDiameter": 2858
+      "orbitDiameter": 2858,
+      "mass": "6.4171×10^23 kg",
+      "orbitalPeriod": "687 Earth days",
+      "rotationalPeriod": "24.6 Earth hours",
+      "temperature": "-153°C to 20°C",
+      "atmosphere": [
+        "Carbon Dioxide",
+        "Nitrogen",
+        "Argon"
+      ],
+      "moons": 2
     },
     {
       "name": "Jupiter",
@@ -43,7 +80,16 @@
       "color": "#F69726",
       "texture": "/textures/jupiter.jpg",
       "scale": 0.01,
-      "orbitDiameter": 8365
+      "orbitDiameter": 8365,
+      "mass": "1.8982×10^27 kg",
+      "orbitalPeriod": "11.86 Earth years",
+      "rotationalPeriod": "9.9 Earth hours",
+      "temperature": "-145°C",
+      "atmosphere": [
+        "Hydrogen",
+        "Helium"
+      ],
+      "moons": 79
     },
     {
       "name": "Saturn",
@@ -54,7 +100,16 @@
       "scale": 0.01,
       "hasRings": true,
       "ringTexture": "/textures/saturn_rings.png",
-      "orbitDiameter": 14816
+      "orbitDiameter": 14816,
+      "mass": "5.6834×10^26 kg",
+      "orbitalPeriod": "29.4 Earth years",
+      "rotationalPeriod": "10.7 Earth hours",
+      "temperature": "-178°C",
+      "atmosphere": [
+        "Hydrogen",
+        "Helium"
+      ],
+      "moons": 82
     },
     {
       "name": "Uranus",
@@ -63,7 +118,17 @@
       "color": "#63C3D9",
       "texture": "/textures/uranus.jpg",
       "scale": 0.01,
-      "orbitDiameter": 29304
+      "orbitDiameter": 29304,
+      "mass": "8.6810×10^25 kg",
+      "orbitalPeriod": "84 Earth years",
+      "rotationalPeriod": "17.2 Earth hours",
+      "temperature": "-224°C",
+      "atmosphere": [
+        "Hydrogen",
+        "Helium",
+        "Methane"
+      ],
+      "moons": 27
     },
     {
       "name": "Neptune",
@@ -72,7 +137,17 @@
       "color": "#3F68C4",
       "texture": "/textures/neptune.jpg",
       "scale": 0.01,
-      "orbitDiameter": 45530
+      "orbitDiameter": 45530,
+      "mass": "1.02413×10^26 kg",
+      "orbitalPeriod": "164.8 Earth years",
+      "rotationalPeriod": "16.1 Earth hours",
+      "temperature": "-214°C",
+      "atmosphere": [
+        "Hydrogen",
+        "Helium",
+        "Methane"
+      ],
+      "moons": 14
     }
   ]
 }
